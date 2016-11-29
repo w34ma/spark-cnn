@@ -36,12 +36,26 @@ class CNN():
         # preprocess make all points between [-0.5, 0.5]
         X = X / 255.0 - 0.5
         for i in range(0, self.I):
+            print('iteration %d:' % i)
+            # forward
+            start = time()
+            RS = self.forward(X)
+            middle = time()
+
+            # backward
+            L = self.backward(X, Y, RS)
+            end = time()
+            print('forward time %.3f, backward time %.3f, loss %.3f ' % \
+                (middle - start, end - middle, L))
+
+            """
+            results = []
             for j in range(0, self.B):
                 samples_start = j * batch
-                samples_end = samples_start + batch - 1
-                samples = X[samples_start:samples_end + 1,:,:,:]
-                labels = Y[samples_start:samples_end + 1]
-                print('iteration %d batch %d, from %d to %d' % \
+                samples_end = samples_start + batch
+                samples = X[samples_start:samples_end,:,:,:]
+                labels = Y[samples_start:samples_end]
+                print('iteration %d batch %d, range [%d, %d)' % \
                     (i + 1, j + 1, samples_start, samples_end))
 
                 #forward
@@ -54,6 +68,7 @@ class CNN():
                 end = time()
                 print('forward time %.3f, backward time %.3f ' % \
                     (middle - start, end - middle))
+            """
 
     def forward(self, X):
         # X are the images [N x W x H x D]
