@@ -3,7 +3,8 @@ import psutil
 import numpy as np
 import pickle
 
-def load_data():
+def load_data(start = 0, end = 60000):
+    # load data from disc in the range [start, end)
     print('Loading cifar10 data...')
     curpath = os.path.dirname(os.path.realpath(__file__))
     dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
@@ -17,7 +18,7 @@ def load_data():
     print('Reading training set...')
     X_train = []
     Y_train = []
-    for i in range(1, 2):
+    for i in range(1, 6):
         filename = 'data_batch_' + str(i)
         with open(os.path.join(dirpath, filename), 'rb') as f:
             raw = pickle.load(f, encoding='latin1')

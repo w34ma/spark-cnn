@@ -17,6 +17,8 @@ class CNN():
         self.lam = 0.1 # regularization strength
 
     def train(self, X, Y, classifications, size = 1000):
+        # input X images [N x W x H x D]
+        # input Y labels [N]
         N, W, H, D = X.shape
         C = len(classifications)
         self.N = N # N: number of images
@@ -38,6 +40,7 @@ class CNN():
         print('Trading data size: %d' % size)
         # preprocess make all points between [-0.5, 0.5]
         X = X[0:size, :, :, :] / 255.0 - 0.5
+        Y = Y[0:size]
         for i in range(0, self.I):
             print('iteration %d:' % i)
             # forward
