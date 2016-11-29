@@ -31,8 +31,8 @@ class CNN():
         # initialize layers
         self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
         self.relu = ReLULayer()
-        self.pool = PoolingLayer(3, 2)
-        self.fc = FCLayer(16, 16, 5, C)
+        self.pool = PoolingLayer(2, 2)
+        self.fc = FCLayer(16, 16, 64, C)
 
         print('Start training CNN...')
         print('Trading data size: %d' % size)

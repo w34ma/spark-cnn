@@ -1,3 +1,5 @@
+from matrix import *
+
 # pooling layer, using max pooling
 class PoolingLayer():
     def __init__(self, F, S):
@@ -13,7 +15,6 @@ class PoolingLayer():
         S = self.S
         
         N, W, H, D = X.shape
-        print(W, H, F, S)
         assert (W - F) % S == 0 and (H - F) % S == 0, \
             'incompatible filter settings'
 
@@ -41,6 +42,6 @@ class PoolingLayer():
         XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         XI = np.argmax(XC, axis = 1)
         dX_col[np.arange(XC.shape[0]), XI] = df.transpose(0, 3, 1, 2).flatten() 
-        dX = im2col(dX_col, (N * D, W, H, 1), F, S, 0)
+        dX = col2im(dX_col, N * D, W, H, 1, F, S, 0)
         return dX
 
