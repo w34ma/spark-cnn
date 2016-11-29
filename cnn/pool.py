@@ -1,3 +1,5 @@
+from matrix import *
+
 # pooling layer, using max pooling
 class PoolingLayer():
     def __init__(self, F, S):
@@ -37,9 +39,13 @@ class PoolingLayer():
 
         dX_col = np.zeros((N * D * W_ * H_, F * F))
         # XC: (N * D * W_ * H_) * (F * F)
-        XC = im2col(X.transpose(0, 3, 1, 2)).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
+        XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         XI = np.argmax(XC, axis = 1)
         dX_col[np.arange(XC.shape[0]), XI] = df.transpose(0, 3, 1, 2).flatten() 
+<<<<<<< HEAD
         dX = im2col(dX_col, (N * D, W, H, 1), F, S, 0).reshape(N, D, W, H).transpose(0, 2, 3, 1)
+=======
+        dX = col2im(dX_col, N * D, W, H, 1, F, S, 0)
+>>>>>>> 6e830af8ede99f5d6072307789a196f56b8d5f47
         return dX
 
