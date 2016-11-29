@@ -7,9 +7,12 @@ def run(size):
     # B: number of batches per iteration
     I = 10
     B = 10
-    classifications, X_train, Y_train, X_test, Y_test = load_data()
-    cnn = CNN(I, B)
-    cnn.train(X_train, Y_train, classifications, size)
+
+    classifications, X, Y = load_training_data(10000, 20001)
+
+    # classifications, X_train, Y_train, X_test, Y_test = load_data()
+    # cnn = CNN(I, B)
+    # cnn.train(X_train, Y_train, classifications, size)
 
 if __name__ == '__main__':
     size = 2000

@@ -3,9 +3,10 @@ import psutil
 import numpy as np
 import pickle
 
-def load_data(start = 0, end = 60000):
+def load_training_data(start = 0, end = 60000):
+    assert end > start, 'invalid range'
     # load data from disc in the range [start, end)
-    print('Loading cifar10 data...')
+    print('Loading cifar10 data from ' + str(start) + ' to ' + str(end - 1))
     curpath = os.path.dirname(os.path.realpath(__file__))
     dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
 
@@ -16,6 +17,19 @@ def load_data(start = 0, end = 60000):
         classifications = raw['label_names']
 
     print('Reading training set...')
+    file_start = start // 10000
+    file_end = (end - 1) // 10000
+
+    X = []
+    Y = []
+
+    
+
+
+
+
+    X = []
+    Y = []
     X_train = []
     Y_train = []
     for i in range(1, 6):
@@ -28,6 +42,7 @@ def load_data(start = 0, end = 60000):
     X_train = np.concatenate(X_train)
     Y_train = np.concatenate(Y_train)
 
+    """
     print('Reading testing set...')
     X_test = None
     Y_test = None
@@ -38,6 +53,8 @@ def load_data(start = 0, end = 60000):
 
     print('Data loading done')
     return classifications, X_train, Y_train, X_test, Y_test
+    """
+    return classifications, X, Y
 
 # softmax loss calculation
 def softmax(S, Y):

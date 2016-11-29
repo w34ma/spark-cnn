@@ -17,6 +17,11 @@ class CNN():
         self.lam = 0.1 # regularization strength
 
     def train(self, X, Y, classifications, size = 1000):
+
+        classifications, X, Y = load_training_data(10000, 20000)
+        return None
+
+        """
         # input X images [N x W x H x D]
         # input Y labels [N]
         N, W, H, D = X.shape
@@ -54,7 +59,8 @@ class CNN():
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
 
-            """
+        """
+        """
             results = []
             for j in range(0, self.B):
                 samples_start = j * batch
@@ -74,7 +80,7 @@ class CNN():
                 end = time()
                 print('forward time %.3f, backward time %.3f ' % \
                     (middle - start, end - middle))
-            """
+        """
 
     def forward(self, X):
         # X are the images [N x W x H x D]
