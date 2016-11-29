@@ -43,6 +43,9 @@ class PoolingLayer():
         XI = np.argmax(XC, axis = 1)
         dX_col[np.arange(XC.shape[0]), XI] = df.transpose(0, 3, 1, 2).flatten() 
 <<<<<<< HEAD
-        dX = col2im(dX_col, (N * D, W, H, 1), F, S, 0).reshape(N, D, W, H).transpose(0, 2, 3, 1)
+        dX = im2col(dX_col, (N * D, W, H, 1), F, S, 0).reshape(N, D, W, H).transpose(0, 2, 3, 1)
+=======
+        dX = col2im(dX_col, N * D, W, H, 1, F, S, 0)
+>>>>>>> 6e830af8ede99f5d6072307789a196f56b8d5f47
         return dX
 
