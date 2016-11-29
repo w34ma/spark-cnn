@@ -37,7 +37,7 @@ class PoolingLayer():
         N, W_, H_, D = df.shape
         _, W, H, _ = X.shape
 
-        dXC = np.zeros((N * D * W_ * H_, F * F))
+        dX_col = np.zeros((N * D * W_ * H_, F * F))
         # XC: (N * D * W_ * H_) * (F * F)
         XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         XI = np.argmax(XC, axis = 1)

@@ -7,8 +7,6 @@ class ReLULayer():
         # output: processed R, every element >= 0
         return np.maximum(0, R)
     def backward(self, df, R):
-        print(df.shape)
-        print(R.shape)
         # input: df are gradients from upstream [N x W x H x K]
         # input: R are input in the forward run [N x W x H x K]
         # output: if input cells is less than 0 set the gradient to 0

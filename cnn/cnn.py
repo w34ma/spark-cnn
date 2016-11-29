@@ -15,6 +15,33 @@ class CNN():
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
+    def init_layers(self, C):
+        # initialize layers
+        self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
+        self.relu = ReLULayer()
+        self.pool = PoolingLayer(2, 2)
+        self.fc = FCLayer(16, 16, 64, C)
+
+    def reload(self):
+        # reload all layers' parameters
+        classifications = load_classifications()
+        C = len(classifications)
+        self.init_layers(C)
+        # load parameters from file
+        self.conv.V = load("conv.V")
+        self.conv.A = load("conv.A")
+        self.conv.b = load("conv.b")
+
+        self.fc.V = load("fc.V")
+        self.fc.A = load("fc.A")
+        self.fc.b = load("fc.b")
+
+    def predict(self, X):
+        # output predicted classifications
+        self.reload()
+        R1, R2, R3, R4 = self.forward(X)
+        return R4
+
     def train(self, size = 1000):
         classifications = load_classifications()
         X, Y = load_training_data(0, size)
@@ -22,17 +49,7 @@ class CNN():
         # input Y labels [N]
         N, W, H, D = X.shape
         C = len(classifications)
-        self.N = N # N: number of images
-        self.W = W # W: width of each image
-        self.H = H # H: height of each image
-        self.D = D # D: depth of each image
-        self.C = C # C: number of classifications
-
-        # initialize layers
-        self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
-        self.relu = ReLULayer()
-        self.pool = PoolingLayer(2, 2)
-        self.fc = FCLayer(16, 16, 64, C)
+        self.init_layers(C)
 
         print('Start training CNN...')
         print('Trading data size: %d' % size)
