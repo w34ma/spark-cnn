@@ -1,4 +1,7 @@
 # fully connected layer
+import numpy as np
+import math
+
 class FCLayer():
     def __init__(self, W, H, D, C):
         self.W = W # input width

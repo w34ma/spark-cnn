@@ -8,6 +8,7 @@ class PoolingLayer():
         # input X activation matrix from conv layer [N x W x H x D]
         # where D is the depth, also the number of filters from conv layer
         # output max pooled activation matrix [N x W_ x H_ x D]
+<<<<<<< HEAD
 
         F = self.F
         S = self.S
@@ -24,10 +25,14 @@ class PoolingLayer():
         XI = np.argmax(XC, axis = 1)
         return XC[np.arange(XC.shape[0]), XI].reshape(N, D, W_, H_).transpose(0, 2, 3, 1)
 
+=======
+        return None
+>>>>>>> a6b424617efb59af37ac3c27b3fd3bd4c35b1ca1
     def backward(self, df, X):
         # input df are gradients from upstream [N x W_ x H_ x D]
         # input X is the activation matrix taken in at forward run [N x W x H x D]
         # output dX gradients on X [N x W x H x D]
+<<<<<<< HEAD
 
         F = self.F
         S = self.S
@@ -43,3 +48,6 @@ class PoolingLayer():
         dX = im2col(dX_col, (N * D, W, H, 1), F, S, 0)
         return dX
 
+=======
+        return None
+>>>>>>> a6b424617efb59af37ac3c27b3fd3bd4c35b1ca1
