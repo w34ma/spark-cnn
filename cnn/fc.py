@@ -19,7 +19,6 @@ class FCLayer():
         # input X activation matrix [N x W x H x D]
         # output classifications [N x C]
         N, W, H, D = X.shape
-        print(X.shape)
         return np.dot(X.reshape(N, -1), self.A) + self.b
 
     def backward(self, df, X):

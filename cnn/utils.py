@@ -5,6 +5,19 @@ import pickle
 
 curpath = os.path.dirname(os.path.realpath(__file__))
 dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
+logpath = os.path.join(curpath, 'logs')
+
+def save(data, name):
+    print('Wrting to ' + name + '...')
+    with open(os.path.join(logpath, name), 'wb') as f:
+        pickle.dump(data, f)
+
+def load(name):
+    print('Loading ' + name + '...')
+    data = None
+    with open(os.path.join(logpath, name), 'rb') as f:
+        data = pickle.load(f)
+    return data
 
 def load_classifications():
     print('Loading classifications...')

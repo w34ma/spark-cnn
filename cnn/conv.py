@@ -48,19 +48,18 @@ class ConvolutionLayer():
         # output: dX gradient on X [N x W x H x D]
         #         dA gradient on A [K x F x F x D]
         #         db gradient on b [K]
-        K = self.K
         F = self.F
         S = self.S
         P = self.P
         A = self.A # [K x F x F x D]
 
-        N, K, W_, H_ = df.shape
-        _, F, _, D = A.shape
+        N, W_, H_, K = df.shape
+        _, W, H, D = X.shape
 
         # stretch gradients to [(N x W_ x H_) x (F x F x D)]
         # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
         # then get gradients on X
-        dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), X.shape, F, S, P)
+        dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
 
         # stretch original input to calculate gradients on filters
         # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
