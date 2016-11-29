@@ -16,7 +16,7 @@ class CNN():
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
-    def train(self, X, Y, classifications):
+    def train(self, X, Y, classifications, size = 1000):
         N, W, H, D = X.shape
         C = len(classifications)
         self.N = N # N: number of images
@@ -35,8 +35,9 @@ class CNN():
         self.fc = FCLayer(16, 16, 5, C)
 
         print('Start training CNN...')
+        print('Trading data size: %d' % size)
         # preprocess make all points between [-0.5, 0.5]
-        X = X[0:2000, :, :, :] / 255.0 - 0.5
+        X = X[0:size, :, :, :] / 255.0 - 0.5
         for i in range(0, self.I):
             print('iteration %d:' % i)
             # forward

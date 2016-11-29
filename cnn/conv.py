@@ -63,8 +63,8 @@ class ConvolutionLayer():
         dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), X.shape, F, S, P)
 
         # stretch original input to calculate gradients on filters
-        XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
+        # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
+        dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
         db = np.sum(df, axis=(0, 1, 2)).reshape(K, 1)
 
         return dX, dA, db
