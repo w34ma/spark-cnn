@@ -1,4 +1,5 @@
 import os
+import psutil
 import numpy as np
 import pickle
 
@@ -59,27 +60,6 @@ def softmax(S, Y):
     return L, dS
 
 # helper for profiling memory usage
-proc_status = '/proc/%d/status' % os.getpid()
-
-def vm(VmKey):
-    '''Private.
-    '''
-    global proc_status, scale
-     # get pseudo file  /proc/<pid>/status
-    try:
-        t = open(proc_status)
-        v = t.read()
-        t.close()
-    except:
-        return 0.0  # non-Linux?
-     # get VmKey line e.g. 'VmRSS:  9999  kB\n ...'
-    i = v.index(VmKey)
-    v = v[i:].split(None, 3)  # whitespace
-    if len(v) < 3:
-        return 0.0  # invalid format?
-     # convert Vm value to bytes
-    return str(v[1]) + ' ' + v[2]
-
-
 def memory():
-    return vm('VmSize:')
+    process = psutil.Process(os.getpid())
+    return str(process.memory_info().rss // 1024 // 1024) + "MB"
