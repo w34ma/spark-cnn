@@ -124,4 +124,12 @@ class CNN():
         self.conv.b += (0 - self.rho) * dbConv
         self.fc.b += (0 - self.rho) * dbFC
 
+        save(self.conv.V, "conv.V")
+        save(self.conv.A, "conv.A")
+        save(self.conv.b, "conv.b")
+
+        save(self.fc.V, "fc.V")
+        save(self.fc.A, "fc.A")
+        save(self.fc.b, "fc.b")
+
         return L
