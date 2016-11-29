@@ -38,6 +38,7 @@ class ConvolutionLayer():
 
         XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
         R = np.dot(XC, A.reshape(K, F * F * D).T) + b.T
+        
         return R.reshape(N, W_, H_, K)
 
     def backward(self, df, X):
