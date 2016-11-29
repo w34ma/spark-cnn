@@ -1,5 +1,4 @@
 # convolution layer
-
 import numpy as np
 from matrix import *
 
@@ -39,7 +38,7 @@ class ConvolutionLayer():
         return np.dot(XC, A.reshape(K, F * F * D).T).reshape(N, W_, H_, K)
 
     def backward(self, df, X):
-        # input: df are gradients from upstream [N x K x W_ x H_]
+        # input: df are gradients from upstream [N x W_ x H_ x K]
         # input: X is a [N x W x H x D] matrix of images
         # output: dX gradient on X [N x W x H x D]
         #         dA gradient on A [K x F x F x D]
@@ -53,12 +52,14 @@ class ConvolutionLayer():
         N, K, W_, H_ = df.shape
         _, F, _, D = A.shape
 
-        # stretch gradients to [(F x F x D) x K] x [K x (W_ x H_ x N)] = [(F x F x D) x (W_ x H_ x N)]
-        dXC = np.dot(A.reshape(K, -1).T, df.transpose(1, 2, 3, 0).reshape(K, -1))
-        # get gradients X
+        # stretch gradients to [(N x W_ x H_) x (F x F x D)]
+        dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
+        # get gradients on X
         dX = col2im(dXC, X.shape, F, S, P)
-        XC = im2col(X, F, S, P)
-        dA = np.dot(df.transpose(1, 0, 2, 3).reshape(K, -1), XC).reshape(K, F, F, D)
-        db = np.sum(df, axis=(0, 2, 3)).reshape(K, 1)
+
+        # stretch original input to calculate gradients on filters
+        XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
+        dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
+        db = np.sum(df, axis=(0, 1, 2)).reshape(K, 1)
 
         return dX, dA, db
