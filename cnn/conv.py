@@ -35,7 +35,8 @@ class ConvolutionLayer():
         H_ = (H - F + 2 * P) // S + 1
 
         XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        return np.dot(XC, A.reshape(K, F * F * D).T).reshape(N, W_, H_, K)
+        R = np.dot(XC, A.reshape(K, F * F * D).T) + b
+        return R.reshape(N, W_, H_, K)
 
     def backward(self, df, X):
         # input: df are gradients from upstream [N x W_ x H_ x K]
