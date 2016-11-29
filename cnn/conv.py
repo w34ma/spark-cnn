@@ -22,6 +22,7 @@ class ConvolutionLayer():
         S = self.S
         P = self.P
         A = self.A
+        b = self.b
         # input: X is a [N x W x H x D] matrix of images
         # output: R: An activation matrix of size [N x W_ x H_ x K]
         # W_ = (W - F + 2P) / S + 1
@@ -36,7 +37,7 @@ class ConvolutionLayer():
         H_ = (H - F + 2 * P) // S + 1
 
         XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        R = np.dot(XC, A.reshape(K, F * F * D).T) + b
+        R = np.dot(XC, A.reshape(K, F * F * D).T) + b.T
         return R.reshape(N, W_, H_, K)
 
     def backward(self, df, X):
