@@ -32,8 +32,6 @@ def load_training_data(start = 0, end = 60000):
     print('Loading cifar10 data from ' + str(start) + ' to ' + str(end - 1))
     file_start = start // 10000 + 1
     file_end = (end - 1) // 10000 + 1
-    print(file_start)
-    print(file_end)
 
     X = []
     Y = []
