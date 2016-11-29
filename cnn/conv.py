@@ -1,5 +1,6 @@
 # convolution layer
 import numpy as np
+import math
 from matrix import *
 
 class ConvolutionLayer():

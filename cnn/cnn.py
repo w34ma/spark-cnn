@@ -2,6 +2,7 @@ import numpy as np
 from time import time
 from conv import ConvolutionLayer
 from relu import ReLULayer
+from pool import PoolingLayer
 from utils import *
 
 class CNN():
