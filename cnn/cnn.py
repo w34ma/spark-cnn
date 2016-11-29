@@ -7,21 +7,17 @@ from fc import FCLayer
 from utils import *
 
 class CNN():
-    def __init__(self, I, B):
+    def __init__(self, I):
         self.I = I # I: number of iterations
-        self.B = B # B: number of batches for each iteration
 
         # hyper parameters settings
         self.rho = 1e-2 # learning rate
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
-    def train(self, X, Y, classifications, size = 1000):
-
-        classifications, X, Y = load_training_data(10000, 20000)
-        return None
-
-        """
+    def train(self, size = 1000):
+        classifications = load_classifications()
+        X, Y = load_training_data(0, size)
         # input X images [N x W x H x D]
         # input Y labels [N]
         N, W, H, D = X.shape
@@ -32,9 +28,6 @@ class CNN():
         self.D = D # D: depth of each image
         self.C = C # C: number of classifications
 
-        assert N % self.B == 0, 'batch number cannot divide total number of images'
-        batch = N // self.B
-
         # initialize layers
         self.conv = ConvolutionLayer(5, 5, 1, 3, 2)
         self.relu = ReLULayer()
@@ -44,8 +37,8 @@ class CNN():
         print('Start training CNN...')
         print('Trading data size: %d' % size)
         # preprocess make all points between [-0.5, 0.5]
-        X = X[0:size, :, :, :] / 255.0 - 0.5
-        Y = Y[0:size]
+        X = X / 255.0 - 0.5
+        
         for i in range(0, self.I):
             print('iteration %d:' % i)
             # forward
@@ -58,29 +51,6 @@ class CNN():
             end = time()
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
-
-        """
-        """
-            results = []
-            for j in range(0, self.B):
-                samples_start = j * batch
-                samples_end = samples_start + batch
-                samples = X[samples_start:samples_end,:,:,:]
-                labels = Y[samples_start:samples_end]
-                print('iteration %d batch %d, range [%d, %d)' % \
-                    (i + 1, j + 1, samples_start, samples_end))
-
-                #forward
-                start = time()
-                RS = self.forward(samples) # get forward results
-                middle = time()
-
-                #backward
-                loss = self.backward(samples, labels, RS)
-                end = time()
-                print('forward time %.3f, backward time %.3f ' % \
-                    (middle - start, end - middle))
-        """
 
     def forward(self, X):
         # X are the images [N x W x H x D]

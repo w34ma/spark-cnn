@@ -3,58 +3,76 @@ import psutil
 import numpy as np
 import pickle
 
-def load_training_data(start = 0, end = 60000):
-    assert end > start, 'invalid range'
-    # load data from disc in the range [start, end)
-    print('Loading cifar10 data from ' + str(start) + ' to ' + str(end - 1))
-    curpath = os.path.dirname(os.path.realpath(__file__))
-    dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
+curpath = os.path.dirname(os.path.realpath(__file__))
+dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
 
-    print('Reading classifications...')
+def load_classifications():
+    print('Loading classifications...')
     classifications = None
     with open(os.path.join(dirpath, "batches.meta"), 'rb') as f:
         raw = pickle.load(f, encoding='latin1')
         classifications = raw['label_names']
+    return classifications
 
+def load_testing_data():
+    print('Loading testing set...')
+    X = None
+    Y = None
+    with open(os.path.join(dirpath, filename), 'rb') as f:
+        raw = pickle.load(f, encoding='latin1')
+        X = raw['data'].reshape(10000, 3, 32, 32).transpose(0, 3, 2, 1)
+        Y = np.array(raw['labels'])
+
+    return X, Y
+
+def load_training_data(start = 0, end = 60000):
+    assert end > start, 'invalid range'
+    # load data from disc in the range [start, end)
     print('Reading training set...')
-    file_start = start // 10000
-    file_end = (end - 1) // 10000
+    print('Loading cifar10 data from ' + str(start) + ' to ' + str(end - 1))
+    file_start = start // 10000 + 1
+    file_end = (end - 1) // 10000 + 1
+    print(file_start)
+    print(file_end)
 
     X = []
     Y = []
 
-    
-
-
-
-
-    X = []
-    Y = []
-    X_train = []
-    Y_train = []
-    for i in range(1, 6):
+    for i in range(file_start, file_end + 1):
         filename = 'data_batch_' + str(i)
         with open(os.path.join(dirpath, filename), 'rb') as f:
             raw = pickle.load(f, encoding='latin1')
-            data = raw['data'].reshape(10000, 3, 32, 32).astype("float").transpose(0, 3, 2, 1)
-            X_train.append(data)
-            Y_train.append(raw['labels'])
-    X_train = np.concatenate(X_train)
-    Y_train = np.concatenate(Y_train)
+            data = raw['data'].reshape(10000, 3, 32, 32).astype('float').transpose(0, 3, 2, 1)
+            labels = raw['labels']
+            if i == file_start and i == file_end:
+                # load part of the file
+                start_pos = start % 10000
+                end_pos = end % 10000
+                if (end_pos == 0):
+                    end_pos = 10000
+                X.append(data[start_pos:end_pos, :, :, :])
+                Y.append(labels[start_pos:end_pos])
+            elif i == file_start:
+                # load part of the file
+                start_pos = start % 10000
+                X.append(data[start_pos:, :, :, :])
+                Y.append(labels[start_pos:])
+            elif i == file_end:
+                # load part of the file
+                end_pos = end % 10000
+                if (end_pos == 0):
+                    end_pos = 10000
+                X.append(data[:end_pos, :, :, :])
+                Y.append(labels[:end_pos])
+            else:
+                # load the entire file
+                X.append(data)
+                Y.append(labels)
 
-    """
-    print('Reading testing set...')
-    X_test = None
-    Y_test = None
-    with open(os.path.join(dirpath, filename), 'rb') as f:
-        raw = pickle.load(f, encoding='latin1')
-        X_test = raw['data'].reshape(10000, 3, 32, 32).transpose(0, 3, 2, 1)
-        Y_test = np.array(raw['labels'])
+    X = np.concatenate(X)
+    Y = np.concatenate(Y)
 
-    print('Data loading done')
-    return classifications, X_train, Y_train, X_test, Y_test
-    """
-    return classifications, X, Y
+    return X, Y
 
 # softmax loss calculation
 def softmax(S, Y):
