@@ -5,7 +5,7 @@ from cnn import CNN
 def run(size):
     # I: number of iterations
     # B: number of batches per iteration
-    I = 1000
+    I = 100
     cnn = CNN(I)
     cnn.train(size)
 

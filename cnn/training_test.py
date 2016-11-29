@@ -9,21 +9,16 @@ def test(size):
     print(X.shape)
     cnn = CNN(0)
     P = cnn.predict(X)
-    
-    N, C = P.shape
-
-    # calculate probabilities [N x C]
-    print(P)
-    ps = np.exp(P - np.max(P, 1, None, True))
-    # ps = ps / np.sum(ps, 1, None, None, True)
-    
-    print(ps)
-
     P = np.argmax(P, 1)
     print('Prediction:')
     print(P)
     print('Answer:')
     print(Y)
+
+    C = np.concatenate([P, Y]).reshape(2, -1).T
+    C = [x for x in C if x[0] == x[1]]
+    print('Correct:')
+    print(len(C))
 
 
 if __name__ == '__main__':

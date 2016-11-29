@@ -39,6 +39,7 @@ class CNN():
     def predict(self, X):
         # output predicted classifications
         self.reload()
+        X = X / 255.0 - 0.5
         R1, R2, R3, R4 = self.forward(X)
         return R4
 
@@ -55,6 +56,9 @@ class CNN():
         print('Trading data size: %d' % size)
         # preprocess make all points between [-0.5, 0.5]
         X = X / 255.0 - 0.5
+
+        print(Y)
+
         
         for i in range(0, self.I):
             print('iteration %d:' % i)
