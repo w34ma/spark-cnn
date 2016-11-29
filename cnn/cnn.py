@@ -11,7 +11,7 @@ class CNN():
         self.I = I # I: number of iterations
 
         # hyper parameters settings
-        self.rho = 1e-2 # learning rate
+        self.rho = 0.01 # learning rate
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
@@ -139,6 +139,7 @@ class CNN():
         self.conv.b += (0 - self.rho) * dbConv
         self.fc.b += (0 - self.rho) * dbFC
 
+        # save layers' settings to pickled file for future usage
         save(self.conv.V, "conv.V")
         save(self.conv.A, "conv.A")
         save(self.conv.b, "conv.b")
