@@ -29,9 +29,9 @@ class CNN():
         self.C = C # C: number of classifications
 
         # initialize layers
-        self.conv = ConvolutionLayer(5, 5, 1, 3, 2)
+        self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
         self.relu = ReLULayer()
-        self.pool = PoolingLayer(5, 2)
+        self.pool = PoolingLayer(3, 2)
         self.fc = FCLayer(16, 16, 5, C)
 
         print('Start training CNN...')
