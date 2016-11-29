@@ -1,5 +1,6 @@
 # matrix manipulation helpers im2col and col2im
 import numpy as np
+from utils import *
 cimport numpy as np
 
 # declare external C++ functions
@@ -26,12 +27,10 @@ def im2col(X, F, S, P):
     # zero padded X
     X0 = np.pad(X, ((0, 0), (P, P), (P, P), (0, 0)), 'constant')
     X0 = np.require(X0, np.float64, ['C', 'A'])
-
     # prepare output for C
     # column stretched matrix
     XC = np.zeros([N * W_ * H_, F * F * D])
     XC = np.require(XC, np.float64, ['C', 'A'])
-
     # hand over calculation to C
     im2col_c(
         <double*> np.PyArray_DATA(X0),
@@ -39,6 +38,7 @@ def im2col(X, F, S, P):
         N, W, H, D, F, S, P
     )
 
+    print('most memory used in im2col: ' + memory())
     return XC
 
 def col2im(dXC, N, W, H, D, F, S, P):
@@ -76,4 +76,5 @@ def col2im(dXC, N, W, H, D, F, S, P):
     else:
         dX = dX0
 
+    print('most memory used in col2im: ' + memory())
     return dX

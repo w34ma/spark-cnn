@@ -2,6 +2,7 @@
 import numpy as np
 import math
 from matrix import *
+from utils import *
 
 class ConvolutionLayer():
     def __init__(self, K, F, S, D, P):
@@ -36,9 +37,9 @@ class ConvolutionLayer():
         W_ = (W - F + 2 * P) // S + 1
         H_ = (H - F + 2 * P) // S + 1
 
-        XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        R = np.dot(XC, A.reshape(K, F * F * D).T) + b.T
-        
+        # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
+        R = np.dot(im2col(X, F, S, P), A.reshape(K, F * F * D).T) + b.T
+
         return R.reshape(N, W_, H_, K)
 
     def backward(self, df, X):
@@ -57,9 +58,9 @@ class ConvolutionLayer():
         _, F, _, D = A.shape
 
         # stretch gradients to [(N x W_ x H_) x (F x F x D)]
-        dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
-        # get gradients on X
-        dX = col2im(dXC, X.shape, F, S, P)
+        # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
+        # then get gradients on X
+        dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), X.shape, F, S, P)
 
         # stretch original input to calculate gradients on filters
         XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]

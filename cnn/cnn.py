@@ -36,7 +36,7 @@ class CNN():
 
         print('Start training CNN...')
         # preprocess make all points between [-0.5, 0.5]
-        X = X[0:5000, :, :, :] / 255.0 - 0.5
+        X = X[0:1000, :, :, :] / 255.0 - 0.5
         for i in range(0, self.I):
             print('iteration %d:' % i)
             # forward
