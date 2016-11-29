@@ -3,6 +3,7 @@ from time import time
 from conv import ConvolutionLayer
 from relu import ReLULayer
 from pool import PoolingLayer
+from fc import FCLayer
 from utils import *
 
 class CNN():
@@ -31,7 +32,7 @@ class CNN():
         self.conv = ConvolutionLayer(5, 5, 1, 3, 2)
         self.relu = ReLULayer()
         self.pool = PoolingLayer(5, 2)
-        self.fc = FCLayer(16, 16, C)
+        self.fc = FCLayer(16, 16, 5, C)
 
         print('Start training CNN...')
         # preprocess make all points between [-0.5, 0.5]
