@@ -30,7 +30,7 @@ class CNN():
         # initialize layers
         self.conv = ConvolutionLayer(5, 5, 1, 3, 2)
         self.relu = ReLULayer()
-        self.pool = PoolingLayer(5, 2, 2)
+        self.pool = PoolingLayer(5, 2)
         self.fc = FCLayer(16, 16, C)
 
         print('Start training CNN...')
