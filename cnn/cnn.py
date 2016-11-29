@@ -76,22 +76,22 @@ class CNN():
     def forward(self, X):
         # X are the images [N x W x H x D]
         start = time()
-        R1 = self.conv.forward(X) # result from first conv layer
+        R1 = self.conv.forward(X) # result from conv layer
         end = time()
         print('layer conv forward done: time %.3f' % (end - start))
 
         start = time()
-        R2 = self.relu.forward(R1)
+        R2 = self.relu.forward(R1) # result from ReLU layer
         end = time()
         print('layer relu forward done: time %.3f' % (end - start))
 
         start = time()
-        R3 = self.pool.forward(R2)
+        R3 = self.pool.forward(R2) # result from pooling layer
         end = time()
         print('layer pool forward done: time %.3f' % (end - start))
 
         start = time()
-        R4 = self.fc.forward(R3)
+        R4 = self.fc.forward(R3) # result from fully connected layer
         end = time()
         print('layer fc forward done: time %.3f' % (end - start))
 
