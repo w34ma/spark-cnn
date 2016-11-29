@@ -4,6 +4,8 @@ import os
 import glob
 
 CIFAR10_PATH = '../cifar10-bin'
+TRAIN_EPOCH_NUM = 50000
+TEST_EPOCH_NUM = 10000
 
 def read_data(files):
     class cifar10(object):
@@ -29,10 +31,57 @@ def read_data(files):
 
     return result
 
+def generate_batch(image, label, batch_size, min_queue_size):
+    thread_num = 16
+    image, label = tf.train.shuffle_batch([image, label], batch_size = batch_size, num_threads = thread_num, capacity = min_queue_size + 3 * batch_size, min_after_dequeue = min_queue_size)
+    return image, tf.reshape(label, batch_size)
+
 def train_input(batch_size):
     files = glob.glob(os.path.join(CIFAR10_PATH, "data_batch_*.bin"))
-    print(files)
     files = tf.train.string_input_producer(files)
     input = read_data(files)
+    min_queue_size = 0.4 * TRAIN_EPOCH_NUM 
     return generate_batch(input.image, input.label, batch_size, min_queue_size)
 
+def test_input(batch_size):
+    files = glob.glob(os.path.join(CIFAR10_PATH, "test_batch.bin"))
+    files = tf.train.string_input_producer(files)
+    input = read_data(files)
+    min_queue_size = 0.4 * TEST_EPOCH_NUM
+    return generate_batch(input.image, input.label, batch_size, min_queue_size)
+
+def build_mode(image):
+    with tf.variable_scope('conv') as scope:
+        kernel = 
+        conv = 
+        bias = 
+        conv_output = 
+    relu_output = 
+    pool_output =
+    with tf.variable_scope('fc') as scope: 
+        fc_output = 
+
+def cal_loss(image, label):
+
+def train_model(loss):
+
+def train():
+    with tf.Graph().as_default():
+        batch_size = 64
+        image, label = train_input(batch_size)
+        logits = build_model(image)
+        loss = cal_loss(image, label)
+        train_op = train_model(loss)
+        
+        class LoggerHook(tf.train.SessionRunHook):
+            def begin(self):
+            def before_run(self,):
+            def after_run():
+
+        with tf.train.MonitoredTrainingSession(hooks = [tf.train.StopAtStepHook(last_step = MAX_STEP), tf.train.NanTensorHook(loss), LoggerHook()]) as mon_sess:  
+            while not mon_sess.should_stop():
+                mon_sess.run(train_op)
+
+if __name__ = '__main__':
+    tf.app.run()
+    train()
