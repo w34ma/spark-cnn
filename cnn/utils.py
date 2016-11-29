@@ -27,8 +27,10 @@ def load_classifications():
         classifications = raw['label_names']
     return classifications
 
-def load_testing_data():
+def load_testing_data(start = 0, end = 10000):
+    assert end > start and start >= 0 and end <= 10000, 'invalid test data range'
     print('Loading testing set...')
+    filename = 'test_batch'
     X = None
     Y = None
     with open(os.path.join(dirpath, filename), 'rb') as f:
@@ -36,7 +38,10 @@ def load_testing_data():
         X = raw['data'].reshape(10000, 3, 32, 32).transpose(0, 3, 2, 1)
         Y = np.array(raw['labels'])
 
-    return X, Y
+    # make RGB in the range of [-0.5, 0.5]
+    X = X / 255.0 - 0.5
+
+    return X[start:end, :, :, :], Y[start:end]
 
 def load_training_data(start = 0, end = 60000):
     assert end > start, 'invalid range'
@@ -82,6 +87,9 @@ def load_training_data(start = 0, end = 60000):
 
     X = np.concatenate(X)
     Y = np.concatenate(Y)
+
+    # make RGB in the range of [-0.5, 0.5]
+    X = X / 255.0 - 0.5
 
     return X, Y
 
