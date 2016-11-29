@@ -149,4 +149,7 @@ class CNN():
         save(self.fc.A, "fc.A")
         save(self.fc.b, "fc.b")
 
+        #print(self.conv.A)
+        #print(self.fc.A)
+
         return L
