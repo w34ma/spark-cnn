@@ -1,11 +1,12 @@
-# test the performance of learnt CNN on its corresponding training data
+# test the performance of learnt CNN on test data
 import sys
 import numpy as np
 from utils import *
 from cnn import CNN
 
 def test(size):
-    X, Y = load_training_data(0, size)
+    assert size <= 10000, 'we only have 10000 test data'
+    X, Y = load_testing_data(0, size)
     cnn = CNN(0)
     P = cnn.predict(X)
     P = np.argmax(P, 1)
@@ -18,7 +19,6 @@ def test(size):
     C = [x for x in C if x[0] == x[1]]
     print('Correct:')
     print('%d/%d' % (len(C), size))
-
 
 if __name__ == '__main__':
     size = 2000

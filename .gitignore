@@ -1,4 +1,5 @@
 cnn/matrix.c
+cnn/logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
