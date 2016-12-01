@@ -10,7 +10,7 @@ from utils import *
 
 from cnn import CNN
 
-class SparkCNN(CNN)
+class SparkCNN(CNN):
     def __init__(self, I, B):
         CNN.__init__(self, I)
         self.B = B # number of batches
