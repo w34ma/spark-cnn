@@ -13,7 +13,7 @@ ITERATION_NUM = 10000
 LABEL_NUM = 10
 
 FRAC_MIN_QUEUE_SIZE = 0.4
-BATCH_SIZE = 64
+BATCH_SIZE = 512
 LABEL_SIZE = 1
 IMAGE_HEIGHT = 32
 IMAGE_WIDTH = 32
@@ -89,14 +89,18 @@ def build_model(x):
     fc_out = tf.matmul(pool_out, fc_W) + fc_b
     return fc_out
 
-def read_train():
+def read_data(type):
 
     class reader(object):
         
-        def __init__(self):
+        def __init__(self, type):
             self.data = np.ndarray(shape = [0, IMAGE_WIDTH * IMAGE_HEIGHT * IMAGE_DEPTH])
             self.label = []
             self.size = 0
+            if type == 'train':
+                self.read_all_train()
+            else:
+                self.read_one_test()
 
         def get(self, size):
             index = random.sample(xrange(self.size), size)
@@ -107,18 +111,29 @@ def read_train():
                 label[i, self.label[index[i]]] = 1 
             return image, label
 
-        def read_all(self):
+        def read_one_test(self):
+            fo = open('../cifar10/test_batch', 'rb')
+            dict = cPickle.load(fo)
+            fo.close()
+            self.data = np.float32(dict['data'])
+            self.label = dict['labels']
+            self.size = len(dict['labels'])
+            print self.data.shape
+            print self.size
+
+        def read_all_train(self):
             files = glob.glob('../cifar10/data_batch_*')
             for file in files:
                 fo = open(file, 'rb')
                 dict = cPickle.load(fo)
                 fo.close()
-                self.data = np.concatenate((self.data, dict['data']), axis = 0) # 10000 * 3072 ndarray
+                self.data = np.concatenate((self.data, np.float32(dict['data'])), axis = 0) # 10000 * 3072 ndarray
                 self.label += dict['labels'] # 10000 list
                 self.size += len(dict['labels'])
+            print self.data.shape
+            print self.size
 
-    result = reader()
-    result.read_all()
+    result = reader(type)
     return result
 
 def train():
@@ -127,20 +142,22 @@ def train():
     cnn_y = build_model(x)
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(cnn_y, y))    
     train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
-    corr_pred = tf.equal(tf.argmax(cnn_y, 0), tf.argmax(y, 0))
+    corr_pred = tf.equal(tf.argmax(cnn_y, 1), tf.argmax(y, 1))
     acc = tf.reduce_mean(tf.cast(corr_pred, tf.float32))
-    train_data = read_train()
+    train_data = read_data('train')
+    test_data = read_data('test')
     sess = tf.Session()
     with sess.as_default():
         sess.run(tf.initialize_all_variables())
         print "start training"
         for i in range(ITERATION_NUM):
             image, label = train_data.get(BATCH_SIZE)
+            train_step.run(feed_dict = {x: image, y: label})
             if i % 10 == 0:
-                print("Now it's the %d round \n" % i)
-                train_step.run(feed_dict = {x: image, y: label})
-                train_acc = acc.eval(feed_dict = {x: image, y: label})
-                print(train_acc)
+                print("Now it's the %d round " % i)
+                im, lb = test_data.get(BATCH_SIZE)
+                train_acc = acc.eval(feed_dict = {x: im, y: lb})
+                print("accuracy now is : %f " % train_acc)
 
 if __name__ == '__main__':
     train()
