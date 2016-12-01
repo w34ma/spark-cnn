@@ -13,7 +13,7 @@ class PoolingLayer():
 
         F = self.F
         S = self.S
-        
+
         N, W, H, D = X.shape
         assert (W - F) % S == 0 and (H - F) % S == 0, \
             'incompatible filter settings'
@@ -22,10 +22,11 @@ class PoolingLayer():
         H_ = (H - F) // S + 1
 
         # XC: (N * D * W_ * H_) * (F * F)
+        # [(N x D) x W x H x 1] => [(N x D x W_ x H_) x (F x F)] 
         XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         XI = np.argmax(XC, axis = 1)
         return XC[np.arange(XC.shape[0]), XI].reshape(N, D, W_, H_).transpose(0, 2, 3, 1)
-    
+
     def backward(self, df, X):
         # input df are gradients from upstream [N x W_ x H_ x D]
         # input X is the activation matrix taken in at forward run [N x W x H x D]
@@ -42,8 +43,7 @@ class PoolingLayer():
         XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         XI = np.argmax(XC, axis = 1)
 
-        dX_col[np.arange(XC.shape[0]), XI] = df.transpose(0, 3, 1, 2).flatten() 
+        dX_col[np.arange(XC.shape[0]), XI] = df.transpose(0, 3, 1, 2).flatten()
         dX = col2im(dX_col, N * D, W, H, 1, F, S, 0).reshape(N, D, W, H).transpose(0, 2, 3, 1)
 
         return dX
-

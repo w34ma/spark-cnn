@@ -15,14 +15,14 @@ class CNN():
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
-        self.verbose = True
+        self.verbose = False
 
     def init_layers(self, C):
         # initialize layers
-        self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
+        self.conv = ConvolutionLayer(32, 3, 1, 3, 1)
         self.relu = ReLULayer()
         self.pool = PoolingLayer(2, 2)
-        self.fc = FCLayer(16, 16, 64, C)
+        self.fc = FCLayer(16, 16, 32, C)
 
     def reload(self):
         # reload all layers' parameters
