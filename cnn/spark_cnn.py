@@ -17,8 +17,4 @@ class SparkCNN(CNN)
 
     """ override train with spark """
     def train(self, size = 1000):
-        classifications = load_classifications()
-        C = len(classifications)
-        self.init_layers(C)
-
-        print('Start training CNN with Spark')
+        CNN.train(self, size)

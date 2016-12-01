@@ -53,7 +53,9 @@ class CNN():
 
         print('Start training CNN...')
         print('Trading data size: %d' % size)
-        
+
+        time_begin = time()
+
         for i in range(0, self.I):
             print('iteration %d:' % i)
             # forward
@@ -66,6 +68,9 @@ class CNN():
             end = time()
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
+
+        time_end = time()
+        print('training done, total time consumption %.3f' % (time_end - time_begin))
 
     def forward(self, X):
         # X are the images [N x W x H x D]

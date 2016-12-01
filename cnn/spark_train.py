@@ -1,12 +1,11 @@
 import sys
 from utils import *
-from cnn import CNN
+from spark_cnn import SparkCNN
+
 
 def run(size, iteration):
-    # I: number of iterations
-    # B: number of batches per iteration
-    cnn = CNN(iteration)
-    cnn.train(size)
+    scnn = SparkCNN(iteration, 1)
+    scnn.train(size)
 
 if __name__ == '__main__':
     size = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
