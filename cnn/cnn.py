@@ -15,6 +15,8 @@ class CNN():
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
+        self.verbose = True
+
     def init_layers(self, C):
         # initialize layers
         self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
@@ -77,22 +79,26 @@ class CNN():
         start = time()
         R1 = self.conv.forward(X) # result from conv layer
         end = time()
-        print('layer conv forward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer conv forward done: time %.3f' % (end - start))
 
         start = time()
         R2 = self.relu.forward(R1) # result from ReLU layer
         end = time()
-        print('layer relu forward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer relu forward done: time %.3f' % (end - start))
 
         start = time()
         R3 = self.pool.forward(R2) # result from pooling layer
         end = time()
-        print('layer pool forward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer pool forward done: time %.3f' % (end - start))
 
         start = time()
         R4 = self.fc.forward(R3) # result from fully connected layer
         end = time()
-        print('layer fc forward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer fc forward done: time %.3f' % (end - start))
 
         return [R1, R2, R3, R4]
 
@@ -105,27 +111,32 @@ class CNN():
         start = time()
         L, dS = softmax(R4, Y) # get loss and gradients with softmax function
         end = time()
-        print('softmax loss calculation backward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('softmax loss calculation backward done: time %.3f' % (end - start))
 
         start = time()
         dX, dAFC, dbFC = self.fc.backward(dS, R3)
         end = time()
-        print('layer fc backward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer fc backward done: time %.3f' % (end - start))
 
         start = time()
         dX = self.pool.backward(dX, R2)
         end = time()
-        print('layer pool backward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer pool backward done: time %.3f' % (end - start))
 
         start = time()
         dX = self.relu.backward(dX, R1)
         end = time()
-        print('layer relu backward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer relu backward done: time %.3f' % (end - start))
 
         start = time()
         dX, dAConv, dbConv = self.conv.backward(dX, X)
         end = time()
-        print('layer conv backward done: time %.3f' % (end - start))
+        if self.verbose:
+            print('layer conv backward done: time %.3f' % (end - start))
 
         # regularization
         L += 0.5 * self.lam * np.sum(self.conv.A * self.conv.A)

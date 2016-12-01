@@ -1,6 +1,7 @@
 # convolution layer
 import numpy as np
 import math
+from time import time
 from matrix import *
 from utils import *
 
@@ -60,11 +61,27 @@ class ConvolutionLayer():
         # stretch gradients to [(N x W_ x H_) x (F x F x D)]
         # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
         # then get gradients on X
-        dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
+        t1 = time()
+        dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
+        t2 = time()
+        # dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
+        dX = col2im(dXC, N, W, H, D, F, S, P)
+        t3 = time()
+        XC = im2col(X, F, S, P)
+        t4 = time()
+        dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
+        t5 = time()
 
         # stretch original input to calculate gradients on filters
         # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
+        # dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
         db = np.sum(df, axis=(0, 1, 2)).reshape(K, 1)
+        t6 = time()
+
+        print('step 1: %.3f' % (t2 - t1))
+        print('step 2: %.3f' % (t3 - t2))
+        print('step 3: %.3f' % (t4 - t3))
+        print('step 4: %.3f' % (t5 - t4))
+        print('step 5: %.3f' % (t6 - t5))
 
         return dX, dA, db
