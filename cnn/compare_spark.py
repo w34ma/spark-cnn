@@ -26,9 +26,13 @@ cnn.fc = FCLayer(16, 16, K, C)
 X = np.arange(N * W * H * D).reshape(N, W, H, D)
 Y = np.ones(N * 1, np.int).reshape(N, 1)
 
+print('before')
+print(memory())
 RS = cnn.forward(X)
 R1, R2, R3, R4 = RS
 L, dS = softmax(R4, Y)
+print(memory())
+print('after')
 
 """
 # non spark
@@ -53,18 +57,40 @@ spark_start = time()
 spark = SparkSession.builder.appName('cnn').getOrCreate()
 sc = spark.sparkContext
 
+dS_shape = dS.shape
+R3_shape = R3.shape
+R2_shape = R2.shape
+R1_shape = R1.shape
+X_shape = X.shape
 
-step = 100
-batches = N // step
+dS_flat = dS.reshape(N, -1)
+R3_flat = R3.reshape(N, -1)
+R2_flat = R2.reshape(N, -1)
+R1_flat = R1.reshape(N, -1)
+X_flat = X.reshape(N, -1)
 
-def calculation(b):
-    start = b * step
-    end = start + step
-    dS_b = dS[start:end, :]
-    R3_b = R3[start:end, :, :, :]
-    R2_b = R2[start:end, :, :, :]
-    R1_b = R1[start:end, :, :, :]
-    X_b = X[start:end, :, :, :]
+dS_c = dS_flat.shape[1]
+R3_c = dS_c + R3_flat.shape[1]
+R2_c = R3_c + R2_flat.shape[1]
+R1_c = R2_c + R1_flat.shape[1]
+X_c = R1_c + X_flat.shape[1]
+
+M = np.concatenate([dS_flat, R3_flat, R2_flat, R1_flat, X_flat], 1)
+
+dS_flat = None
+R3_flat = None
+R2_flat = None
+R1_flat = None
+X_flat = None
+
+
+def calculate(B):
+    [dS_b, R3_b, R2_b, R1_b, X_b] = np.split(B, [dS_c, R3_c, R2_c, R1_c])
+    dS_b = dS_b.reshape(1, dS_shape[1])
+    R3_b = R3_b.reshape(1, R3_shape[1], R3_shape[2], R3_shape[3])
+    R2_b = R2_b.reshape(1, R2_shape[1], R2_shape[2], R2_shape[3])
+    R1_b = R1_b.reshape(1, R1_shape[1], R1_shape[2], R1_shape[3])
+    X_b = X_b.reshape(1, X_shape[1], X_shape[2], X_shape[3])
 
     dXFC_b, dAFC_b, dbFC_b = cnn.fc.backward(dS_b, R3_b)
     dXPool_b = cnn.pool.backward(dXFC_b, R2_b)
@@ -73,20 +99,21 @@ def calculation(b):
 
     return [dAFC_b, dbFC_b, dAConv_b, dbConv_b]
 
+R = sc.parallelize(M, 4).map(calculate).collect()
+# R = R.collect()
+# R = np.sum(np.asarray(R), 0)
 
-R = sc.parallelize(range(0, batches)).map(calculation).collect()
+"""
 R = np.sum(np.asarray(R), 0)
+
 dAFC = R[0]
 dbFC = R[1]
 dAConv = R[2]
 dbConv = R[3]
-print(dAFC.shape)
-print(dbFC.shape)
-print(dAConv.shape)
-print(dbConv.shape)
-
+"""
 spark_end = time()
 print('Spark: %.3f' % (spark_end - spark_start))
+
 
 
 """
@@ -95,5 +122,4 @@ assert np.allclose(dbFC_1, dbFC), 'dbFC failed'
 assert np.allclose(dAConv_1, dAConv), 'dAConv failed'
 assert np.allclose(dbConv_1, dbConv), 'dbConv failed'
 """
-
 print('done!')

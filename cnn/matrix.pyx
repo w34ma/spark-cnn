@@ -38,7 +38,7 @@ def im2col(X, F, S, P):
         N, W, H, D, F, S, P
     )
 
-    print('most memory used in im2col: ' + memory())
+    # print('most memory used in im2col: ' + memory())
     return XC
 
 def col2im(dXC, N, W, H, D, F, S, P):
@@ -76,5 +76,5 @@ def col2im(dXC, N, W, H, D, F, S, P):
     else:
         dX = dX0
 
-    print('most memory used in col2im: ' + memory())
+    # print('most memory used in col2im: ' + memory())
     return dX
