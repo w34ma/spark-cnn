@@ -78,10 +78,12 @@ class ConvolutionLayer():
         db = np.sum(df, axis=(0, 1, 2)).reshape(K, 1)
         t6 = time()
 
+        """
         print('step 1: %.3f' % (t2 - t1))
         print('step 2: %.3f' % (t3 - t2))
         print('step 3: %.3f' % (t4 - t3))
         print('step 4: %.3f' % (t5 - t4))
         print('step 5: %.3f' % (t6 - t5))
+        """
 
         return dX, dA, db
