@@ -3,8 +3,8 @@ import numpy as np
 import os
 import glob
 import time
-import tf-pip-read
-import tf-pip-model
+from tf_pip_read import *
+from tf_pip_model import *
 
 CIFAR10_PATH = '../cifar10-bin'
 CHECKPOINT_DIR = 'tf-backup'
@@ -23,10 +23,11 @@ IMAGE_DEPTH = 3
 def train():
     with tf.Graph().as_default():
         global_step = tf.contrib.framework.get_or_create_global_step()
-        image, label = tf-pip-read.train_input(BATCH_SIZE)
-        logits = tf-pip-model.cnn-model(image)
-        loss = tf-pip-model.cal_loss(logits, label)
-        train_op = tf-pip-model.train_model(loss)
+        image, label = train_input(BATCH_SIZE)
+        model = cnn_model()
+        logits = model.init(image)
+        loss = cal_loss(logits, label)
+        train_op = train_model(loss)
         
         class _LoggerHook(tf.train.SessionRunHook):
             def begin(self):
