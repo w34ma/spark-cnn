@@ -12,6 +12,7 @@ TRAIN_EPOCH_NUM = 50000
 TEST_EPOCH_NUM = 10000
 ITERATION_NUM = 10000
 LABEL_NUM = 10
+DEVICE_REP = False
 
 FRAC_MIN_QUEUE_SIZE = 0.4
 BATCH_SIZE = 32
@@ -44,7 +45,7 @@ def train():
                 if self._step % 100 == 0:
                     print("current loss value: %f" % loss_value)
 
-        with tf.train.MonitoredTrainingSession(hooks=[tf.train.StopAtStepHook(last_step = ITERATION_NUM), tf.train.NanTensorHook(loss), _LoggerHook()], checkpoint_dir = CHECKPOINT_DIR) as mon_sess:
+        with tf.train.MonitoredTrainingSession(hooks=[tf.train.StopAtStepHook(last_step = ITERATION_NUM), tf.train.NanTensorHook(loss), _LoggerHook()], config=tf.ConfigProto(log_device_placement = DEVICE_REP), checkpoint_dir = CHECKPOINT_DIR) as mon_sess:
             while not mon_sess.should_stop():
                 mon_sess.run(train_op)     
 
