@@ -9,7 +9,12 @@ from fc import FCLayer
 from utils import *
 from time import time
 
-N = 1000
+from queue import Queue
+from threading import Thread
+
+B = 100
+
+N = 2000
 W = 32
 H = 32
 D = 3
@@ -26,9 +31,13 @@ cnn.fc = FCLayer(16, 16, K, C)
 X = np.arange(N * W * H * D).reshape(N, W, H, D)
 Y = np.ones(N * 1, np.int).reshape(N, 1)
 
+print('before')
+print(memory())
 RS = cnn.forward(X)
 R1, R2, R3, R4 = RS
 L, dS = softmax(R4, Y)
+print(memory())
+print('after')
 
 """
 # non spark
@@ -53,18 +62,30 @@ spark_start = time()
 spark = SparkSession.builder.appName('cnn').getOrCreate()
 sc = spark.sparkContext
 
+def split(dS, R3, R2, R1, X):
+    assert N % B == 0, 'invalid B'
+    step = N // B
 
-step = 100
-batches = N // step
+    batches = []
+    for i in range(0, B):
+        start = i * step
+        end = start + step
+        dS_i = dS[start:end, :]
+        R3_i = R3[start:end, :, :, :]
+        R2_i = R2[start:end, :, :, :]
+        R1_i = R1[start:end, :, :, :]
+        X_i = X[start:end, :, :, :]
+        batches.append([dS_i, R3_i, R2_i, R1_i, X_i])
 
-def calculation(b):
-    start = b * step
-    end = start + step
-    dS_b = dS[start:end, :]
-    R3_b = R3[start:end, :, :, :]
-    R2_b = R2[start:end, :, :, :]
-    R1_b = R1[start:end, :, :, :]
-    X_b = X[start:end, :, :, :]
+    return batches
+
+
+def backward(batch):
+    dS_b = batch[0]
+    R3_b = batch[1]
+    R2_b = batch[2]
+    R1_b = batch[3]
+    X_b = batch[4]
 
     dXFC_b, dAFC_b, dbFC_b = cnn.fc.backward(dS_b, R3_b)
     dXPool_b = cnn.pool.backward(dXFC_b, R2_b)
@@ -73,20 +94,29 @@ def calculation(b):
 
     return [dAFC_b, dbFC_b, dAConv_b, dbConv_b]
 
+split_start = time()
+batches = sc.broadcast(split(dS, R3, R2, R1, X))
+split_end = time()
+print('spliting cost %.3f' % (split_end - split_start))
 
-R = sc.parallelize(range(0, batches)).map(calculation).collect()
-R = np.sum(np.asarray(R), 0)
+R = sc.parallelize(batches.value, 16).map(backward).reduce(collect)
+
+def collect(a, b):
+    return np.sum([a, b], 0)
+
+
+"""
+
+R = sc.parallelize(batches).map(backward).cache().reduce(collect)
+
 dAFC = R[0]
 dbFC = R[1]
 dAConv = R[2]
 dbConv = R[3]
-print(dAFC.shape)
-print(dbFC.shape)
-print(dAConv.shape)
-print(dbConv.shape)
 
 spark_end = time()
 print('Spark: %.3f' % (spark_end - spark_start))
+"""
 
 
 """

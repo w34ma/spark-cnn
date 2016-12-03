@@ -7,7 +7,7 @@ from fc import FCLayer
 from utils import *
 from time import time
 
-N = 1000
+N = 500
 W = 32
 H = 32
 D = 3

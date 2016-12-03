@@ -8,56 +8,40 @@ from utils import *
 
 class CNN():
     def __init__(self, I):
+        self.name = 'cnn'
         self.I = I # I: number of iterations
+        classifications = load_classifications()
+        C = len(classifications)
+        self.init_layers(C)
+        self.C = C
 
         # hyper parameters settings
         self.rho = 0.01 # learning rate
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
-        self.verbose = False
+        # logging settings
+        self.verbose = True
+        self.load_data = True
 
     def init_layers(self, C):
         # initialize layers
-        self.conv = ConvolutionLayer(32, 3, 1, 3, 1)
+        self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
         self.relu = ReLULayer()
         self.pool = PoolingLayer(2, 2)
-        self.fc = FCLayer(16, 16, 32, C)
-
-    def reload(self):
-        # reload all layers' parameters
-        classifications = load_classifications()
-        C = len(classifications)
-        self.init_layers(C)
-        # load parameters from file
-        self.conv.V = load("conv.V")
-        self.conv.A = load("conv.A")
-        self.conv.b = load("conv.b")
-
-        self.fc.V = load("fc.V")
-        self.fc.A = load("fc.A")
-        self.fc.b = load("fc.b")
-
-    def predict(self, X):
-        # output predicted classifications
-        self.reload()
-        R1, R2, R3, R4 = self.forward(X)
-        return R4
+        self.fc = FCLayer(16, 16, 64, C)
 
     def train(self, size = 1000):
-        classifications = load_classifications()
-        X, Y = load_training_data(0, size)
+        X = None
+        Y = None
+        if self.load_data:
+            X, Y = load_training_data(0, size)
         # input X images [N x W x H x D]
         # input Y labels [N]
-        N, W, H, D = X.shape
-        C = len(classifications)
-        self.init_layers(C)
-
         print('Start training CNN...')
-        print('Trading data size: %d' % size)
+        print('Training data size: %d' % size)
 
         time_begin = time()
-
         for i in range(0, self.I):
             print('iteration %d:' % i)
             # forward
@@ -65,9 +49,21 @@ class CNN():
             RS = self.forward(X)
             middle = time()
 
-            # backward
-            L = self.backward(X, Y, RS)
+            # calculate loss and gradients
+            start = time()
+            L, dS = softmax(RS[3], Y) # get loss and gradients with softmax function
             end = time()
+            if self.verbose:
+                print('softmax loss calculation done: time %.3f' % (end - start))
+
+            # backward
+            dAConv, dbConv, dAFC, dbFC = self.backward(X, RS, dS)
+            end = time()
+
+            # update parameters
+            L = self.update(L, dAConv, dbConv, dAFC, dbFC)
+            self.save()
+
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
 
@@ -102,17 +98,11 @@ class CNN():
 
         return [R1, R2, R3, R4]
 
-    def backward(self, X, Y, RS):
+    def backward(self, X, RS, dS):
         # X are the images [N x W x H x D]
         # Y are the correct labels [N x 1]
         # RS are results from forward run
         R1, R2, R3, R4 = RS
-
-        start = time()
-        L, dS = softmax(R4, Y) # get loss and gradients with softmax function
-        end = time()
-        if self.verbose:
-            print('softmax loss calculation backward done: time %.3f' % (end - start))
 
         start = time()
         dX, dAFC, dbFC = self.fc.backward(dS, R3)
@@ -138,6 +128,9 @@ class CNN():
         if self.verbose:
             print('layer conv backward done: time %.3f' % (end - start))
 
+        return dAConv, dbConv, dAFC, dbFC
+
+    def update(self, L, dAConv, dbConv, dAFC, dbFC):
         # regularization
         L += 0.5 * self.lam * np.sum(self.conv.A * self.conv.A)
         L += 0.5 * self.lam * np.sum(self.fc.A * self.fc.A)
@@ -155,16 +148,28 @@ class CNN():
         self.conv.b += (0 - self.rho) * dbConv
         self.fc.b += (0 - self.rho) * dbFC
 
-        # save layers' settings to pickled file for future usage
-        save(self.conv.V, "conv.V")
-        save(self.conv.A, "conv.A")
-        save(self.conv.b, "conv.b")
-
-        save(self.fc.V, "fc.V")
-        save(self.fc.A, "fc.A")
-        save(self.fc.b, "fc.b")
-
-        #print(self.conv.A)
-        #print(self.fc.A)
-
         return L
+
+    def reload(self):
+        # reload all layers' parameters
+        self.conv.V = load_parameters(self.name + '_conv.V')
+        self.conv.A = load_parameters(self.name + '_conv.A')
+        self.conv.b = load_parameters(self.name + '_conv.b')
+        self.fc.V = load_parameters(self.name + '_fc.V')
+        self.fc.A = load_parameters(self.name + '_fc.A')
+        self.fc.b = load_parameters(self.name + '_fc.b')
+
+    def save(self):
+        # save all layers' parameters
+        save_parameters(self.name + '_conv.V', self.conv.V)
+        save_parameters(self.name + '_conv.A', self.conv.A)
+        save_parameters(self.name + '_conv.b', self.conv.b)
+        save_parameters(self.name + '_fc.V', self.fc.V)
+        save_parameters(self.name + '_fc.A', self.fc.A)
+        save_parameters(self.name + '_fc.b', self.fc.b)
+
+    def predict(self, X):
+        # output predicted classifications
+        self.reload()
+        R1, R2, R3, R4 = self.forward(X)
+        return R4

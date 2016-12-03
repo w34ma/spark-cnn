@@ -5,17 +5,17 @@ import pickle
 
 curpath = os.path.dirname(os.path.realpath(__file__))
 dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
-logpath = os.path.join(curpath, 'logs')
+parpath = os.path.join(curpath, 'parameters')
 
-def save(data, name):
-    print('Wrting to ' + name + '...')
-    with open(os.path.join(logpath, name), 'wb') as f:
+def save_parameters(name, data):
+    name = name + '.params'
+    with open(os.path.join(parpath, name), 'wb') as f:
         pickle.dump(data, f)
 
-def load(name):
-    print('Loading ' + name + '...')
+def load_parameters(name):
+    name = name + '.params'
     data = None
-    with open(os.path.join(logpath, name), 'rb') as f:
+    with open(os.path.join(parpath, name), 'rb') as f:
         data = pickle.load(f)
     return data
 

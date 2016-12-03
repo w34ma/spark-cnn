@@ -13,6 +13,7 @@ class FCLayer():
         # initialize weights and biases
         # [(W x H x D) x C]
         self.A = math.sqrt(2.0 / (W * H * D * C)) * np.random.randn(W * H * D, C)
+        # self.A = math.sqrt(2.0 / (W * H * D * C)) * np.zeros((W * H * D, C))
         # self.A = 0.01 * np.random.randn(W * H * D, C)
         self.b = np.zeros([1, C])
 

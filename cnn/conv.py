@@ -16,6 +16,7 @@ class ConvolutionLayer():
         self.V = np.zeros([K, F, F, D])
         # initialize weights and bias
         self.A = math.sqrt(2.0 / (K * F * F * D)) * np.random.randn(K, F, F, D)
+        # self.A = math.sqrt(2.0 / (K * F * F * D)) * np.zeros((K, F, F, D))
         # self.A = 0.01 * np.random.randn(K, F, F, D)
         self.b = np.zeros((K, 1))
 
