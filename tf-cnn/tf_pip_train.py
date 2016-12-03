@@ -28,7 +28,7 @@ def train():
         model = cnn_model()
         logits = model.init(image)
         loss = cal_loss(logits, label)
-        train_op = train_model(loss)
+        train_op = train_model(loss, global_step)
         
         class _LoggerHook(tf.train.SessionRunHook):
             def begin(self):
@@ -45,7 +45,10 @@ def train():
                 if self._step % 100 == 0:
                     print("current loss value: %f" % loss_value)
 
-        with tf.train.MonitoredTrainingSession(hooks=[tf.train.StopAtStepHook(last_step = ITERATION_NUM), tf.train.NanTensorHook(loss), _LoggerHook()], config=tf.ConfigProto(log_device_placement = DEVICE_REP), checkpoint_dir = CHECKPOINT_DIR) as mon_sess:
+        class _CheckHook(tf.train.CheckpointSaverHook):
+             def __init__:
+                
+        with tf.train.MonitoredTrainingSession(hooks=[tf.train.StopAtStepHook(last_step = ITERATION_NUM), tf.train.NanTensorHook(loss), _LoggerHook(), _CheckHook()]) as mon_sess:
             while not mon_sess.should_stop():
                 mon_sess.run(train_op)     
 

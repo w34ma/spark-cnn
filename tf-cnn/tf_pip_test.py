@@ -21,15 +21,13 @@ IMAGE_HEIGHT = 32
 IMAGE_WIDTH = 32
 IMAGE_DEPTH = 3
 
-MOVING_AVE_DECAY = 0.99
-SLEEP_INTERVAL = 30
+SLEEP_INTERVAL = 60
 
 def test_one(saver, top_k):
     with tf.Session() as sess:
         ckpt = tf.train.get_checkpoint_state(CHECKPOINT_DIR)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
         else:
             print('No checkpoint file found')
             return
@@ -59,7 +57,6 @@ def test_one(saver, top_k):
 
 def test_all():
     with tf.Graph().as_default() as g:
-        global_step = tf.contrib.framework.get_or_create_global_step()
         image, label = test_input(BATCH_SIZE)
         model = cnn_model()
         logits = model.init(image)
