@@ -23,6 +23,7 @@ class CNN():
         self.relu = ReLULayer()
         self.pool = PoolingLayer(2, 2)
         self.fc = FCLayer(16, 16, 32, C)
+        return self.conv, self.relu, self.pool, self.fc
 
     def reload(self):
         # reload all layers' parameters
@@ -54,7 +55,7 @@ class CNN():
         self.init_layers(C)
 
         print('Start training CNN...')
-        print('Trading data size: %d' % size)
+        print('Training data size: %d' % N)
 
         time_begin = time()
 

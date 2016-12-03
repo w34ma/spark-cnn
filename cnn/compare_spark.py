@@ -9,7 +9,12 @@ from fc import FCLayer
 from utils import *
 from time import time
 
-N = 1000
+from queue import Queue
+from threading import Thread
+
+B = 100
+
+N = 2000
 W = 32
 H = 32
 D = 3
@@ -57,40 +62,30 @@ spark_start = time()
 spark = SparkSession.builder.appName('cnn').getOrCreate()
 sc = spark.sparkContext
 
-dS_shape = dS.shape
-R3_shape = R3.shape
-R2_shape = R2.shape
-R1_shape = R1.shape
-X_shape = X.shape
+def split(dS, R3, R2, R1, X):
+    assert N % B == 0, 'invalid B'
+    step = N // B
 
-dS_flat = dS.reshape(N, -1)
-R3_flat = R3.reshape(N, -1)
-R2_flat = R2.reshape(N, -1)
-R1_flat = R1.reshape(N, -1)
-X_flat = X.reshape(N, -1)
+    batches = []
+    for i in range(0, B):
+        start = i * step
+        end = start + step
+        dS_i = dS[start:end, :]
+        R3_i = R3[start:end, :, :, :]
+        R2_i = R2[start:end, :, :, :]
+        R1_i = R1[start:end, :, :, :]
+        X_i = X[start:end, :, :, :]
+        batches.append([dS_i, R3_i, R2_i, R1_i, X_i])
 
-dS_c = dS_flat.shape[1]
-R3_c = dS_c + R3_flat.shape[1]
-R2_c = R3_c + R2_flat.shape[1]
-R1_c = R2_c + R1_flat.shape[1]
-X_c = R1_c + X_flat.shape[1]
-
-M = np.concatenate([dS_flat, R3_flat, R2_flat, R1_flat, X_flat], 1)
-
-dS_flat = None
-R3_flat = None
-R2_flat = None
-R1_flat = None
-X_flat = None
+    return batches
 
 
-def calculate(B):
-    [dS_b, R3_b, R2_b, R1_b, X_b] = np.split(B, [dS_c, R3_c, R2_c, R1_c])
-    dS_b = dS_b.reshape(1, dS_shape[1])
-    R3_b = R3_b.reshape(1, R3_shape[1], R3_shape[2], R3_shape[3])
-    R2_b = R2_b.reshape(1, R2_shape[1], R2_shape[2], R2_shape[3])
-    R1_b = R1_b.reshape(1, R1_shape[1], R1_shape[2], R1_shape[3])
-    X_b = X_b.reshape(1, X_shape[1], X_shape[2], X_shape[3])
+def backward(batch):
+    dS_b = batch[0]
+    R3_b = batch[1]
+    R2_b = batch[2]
+    R1_b = batch[3]
+    X_b = batch[4]
 
     dXFC_b, dAFC_b, dbFC_b = cnn.fc.backward(dS_b, R3_b)
     dXPool_b = cnn.pool.backward(dXFC_b, R2_b)
@@ -99,21 +94,29 @@ def calculate(B):
 
     return [dAFC_b, dbFC_b, dAConv_b, dbConv_b]
 
-R = sc.parallelize(M, 4).map(calculate).collect()
-# R = R.collect()
-# R = np.sum(np.asarray(R), 0)
+split_start = time()
+batches = sc.broadcast(split(dS, R3, R2, R1, X))
+split_end = time()
+print('spliting cost %.3f' % (split_end - split_start))
+
+R = sc.parallelize(batches.value, 16).map(backward).reduce(collect)
+
+def collect(a, b):
+    return np.sum([a, b], 0)
+
 
 """
-R = np.sum(np.asarray(R), 0)
+
+R = sc.parallelize(batches).map(backward).cache().reduce(collect)
 
 dAFC = R[0]
 dbFC = R[1]
 dAConv = R[2]
 dbConv = R[3]
-"""
+
 spark_end = time()
 print('Spark: %.3f' % (spark_end - spark_start))
-
+"""
 
 
 """
@@ -122,4 +125,5 @@ assert np.allclose(dbFC_1, dbFC), 'dbFC failed'
 assert np.allclose(dAConv_1, dAConv), 'dAConv failed'
 assert np.allclose(dbConv_1, dbConv), 'dbConv failed'
 """
+
 print('done!')
