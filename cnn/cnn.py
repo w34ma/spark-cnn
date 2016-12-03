@@ -51,8 +51,15 @@ class CNN():
             RS = self.forward(X)
             middle = time()
 
+            # calculate loss and gradients
+            start = time()
+            L, dS = softmax(RS[3], Y) # get loss and gradients with softmax function
+            end = time()
+            if self.verbose:
+                print('softmax loss calculation done: time %.3f' % (end - start))
+
             # backward
-            L, dAConv, dbConv, dAFC, dbFC = self.backward(X, Y, RS)
+            dAConv, dbConv, dAFC, dbFC = self.backward(X, RS, dS)
             end = time()
 
             # update parameters
@@ -93,17 +100,11 @@ class CNN():
 
         return [R1, R2, R3, R4]
 
-    def backward(self, X, Y, RS):
+    def backward(self, X, RS, dS):
         # X are the images [N x W x H x D]
         # Y are the correct labels [N x 1]
         # RS are results from forward run
         R1, R2, R3, R4 = RS
-
-        start = time()
-        L, dS = softmax(R4, Y) # get loss and gradients with softmax function
-        end = time()
-        if self.verbose:
-            print('softmax loss calculation backward done: time %.3f' % (end - start))
 
         start = time()
         dX, dAFC, dbFC = self.fc.backward(dS, R3)
@@ -129,7 +130,7 @@ class CNN():
         if self.verbose:
             print('layer conv backward done: time %.3f' % (end - start))
 
-        return L, dAConv, dbConv, dAFC, dbFC
+        return dAConv, dbConv, dAFC, dbFC
 
     def update(self, L, dAConv, dbConv, dAFC, dbFC):
         # regularization
