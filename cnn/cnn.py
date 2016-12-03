@@ -21,8 +21,7 @@ class CNN():
         self.lam = 0.1 # regularization strength
 
         # logging settings
-        self.verbose = True
-        self.load_data = True
+        self.verbose = False
 
     def init_layers(self, C):
         # initialize layers
@@ -32,10 +31,7 @@ class CNN():
         self.fc = FCLayer(16, 16, 64, C)
 
     def train(self, size = 1000):
-        X = None
-        Y = None
-        if self.load_data:
-            X, Y = load_training_data(0, size)
+        X, Y = load_training_data(0, size)
         # input X images [N x W x H x D]
         # input Y labels [N]
         print('Start training CNN...')
@@ -44,17 +40,14 @@ class CNN():
         time_begin = time()
         for i in range(0, self.I):
             print('iteration %d:' % i)
+
             # forward
             start = time()
             RS = self.forward(X)
             middle = time()
 
             # calculate loss and gradients
-            start = time()
             L, dS = softmax(RS[3], Y) # get loss and gradients with softmax function
-            end = time()
-            if self.verbose:
-                print('softmax loss calculation done: time %.3f' % (end - start))
 
             # backward
             dAConv, dbConv, dAFC, dbFC = self.backward(X, RS, dS)
