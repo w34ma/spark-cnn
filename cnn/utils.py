@@ -8,10 +8,12 @@ dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
 parpath = os.path.join(curpath, 'parameters')
 
 def save_parameters(name, data):
+    name = name + '.params'
     with open(os.path.join(parpath, name), 'wb') as f:
         pickle.dump(data, f)
 
 def load_parameters(name):
+    name = name + '.params'
     data = None
     with open(os.path.join(parpath, name), 'rb') as f:
         data = pickle.load(f)
