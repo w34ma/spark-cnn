@@ -14,11 +14,8 @@ from cnn import CNN
 class SparkCNN(CNN):
     def __init__(self, I, B):
         CNN.__init__(self, I)
+        self.name = 'spark_cnn'
         self.B = B # number of batches
-        classifications = load_classifications()
-        C = len(classifications)
-        self.init_layers(C)
-        self.C = C
         # create spark context
         spark = SparkSession.builder.appName('cnn').getOrCreate()
         self.sc = spark.sparkContext
@@ -46,27 +43,31 @@ class SparkCNN(CNN):
             X, Y = load_training_data(start, end)
             R1 = conv.forward(X)
             # save X
-            # save(X, 'X_batch_' + str(batch))
+            save(X, 'X_batch_' + str(batch))
             X = None
             R2 = relu.forward(R1)
             # save R1
-            # save(R1, 'R1_batch_' + str(batch))
+            save(R1, 'R1_batch_' + str(batch))
             R1 = None
             R3 = pool.forward(R2)
             # save R2
-            # save(R2, 'R2_batch_' + str(batch))
+            save(R2, 'R2_batch_' + str(batch))
             R2 = None
             R4 = fc.forward(R3)
             # save R3
-            # save(R3, 'R3_batch_' + str(batch))
+            save(R3, 'R3_batch_' + str(batch))
             R3 = None
-
             return [R4, Y]
 
         def forward_reduce(a, b):
             R4 = np.append(a[0], b[0], 0)
             Y = np.append(a[1], b[1], 0)
             return [R4, Y]
+
+        def backward_map(batch):
+
+
+        def backward_reduce(a, b):
 
 
         for i in range(0, self.I):
@@ -78,4 +79,42 @@ class SparkCNN(CNN):
             Y = R[1]
             end = time()
             print('forward %.3f' % (end - start))
-            return R4, Y
+
+
+            # backward
+            # calculate loss and gradients
+            L, dS = softmax(R4, Y)
+            start = time()
+            batches = []
+            for i in range(0, B):
+                dS_i = dS[i * G:i * G + G, :]
+                batches.append(dS_i)
+
+            R = sc.parallelize(batches).map(backward_map).reduce(backward_reduce)
+
+            dAConv = R[0]
+            dbConv = R[1]
+            dAFC = R[2]
+            dbFC = R[3]
+            end = time()
+            print('backward %.3f' % (end - start))
+
+            # update parameters
+            # velocities
+            conv.V = self.mu * conv.V - self.rho * dAConv
+            fc.V = self.mu * fc.V - self.rho * dAFC
+
+            # weights
+            conv.A += conv.V
+            fc.A += fc.V
+
+            # biases
+            conv.b += (0 - self.rho) * dbConv
+            fc.b += (0 - self.rho) * dbFC
+
+            # save parameters
+            self.conv = conv
+            self.relu = relu
+            self.pool = pool
+            self.fc = fc
+            self.save()

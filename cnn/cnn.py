@@ -8,14 +8,20 @@ from utils import *
 
 class CNN():
     def __init__(self, I):
+        self.name = 'cnn'
         self.I = I # I: number of iterations
+        classifications = load_classifications()
+        C = len(classifications)
+        self.init_layers(C)
+        self.C = C
 
         # hyper parameters settings
         self.rho = 0.01 # learning rate
         self.mu = 0.9 # momentum
         self.lam = 0.1 # regularization strength
 
-        self.verbose = False
+        # logging settings
+        self.verbose = True
 
     def init_layers(self, C):
         # initialize layers
@@ -23,27 +29,6 @@ class CNN():
         self.relu = ReLULayer()
         self.pool = PoolingLayer(2, 2)
         self.fc = FCLayer(16, 16, 64, C)
-        return self.conv, self.relu, self.pool, self.fc
-
-    def reload(self):
-        # reload all layers' parameters
-        classifications = load_classifications()
-        C = len(classifications)
-        self.init_layers(C)
-        # load parameters from file
-        self.conv.V = load("conv.V")
-        self.conv.A = load("conv.A")
-        self.conv.b = load("conv.b")
-
-        self.fc.V = load("fc.V")
-        self.fc.A = load("fc.A")
-        self.fc.b = load("fc.b")
-
-    def predict(self, X):
-        # output predicted classifications
-        self.reload()
-        R1, R2, R3, R4 = self.forward(X)
-        return R4
 
     def train(self, size = 1000):
         classifications = load_classifications()
@@ -67,8 +52,13 @@ class CNN():
             middle = time()
 
             # backward
-            L = self.backward(X, Y, RS)
+            L, dAConv, dbConv, dAFC, dbFC = self.backward(X, Y, RS)
             end = time()
+
+            # update parameters
+            L = self.update(L, dAConv, dbConv, dAFC, dbFC)
+            self.save()
+
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
 
@@ -139,6 +129,9 @@ class CNN():
         if self.verbose:
             print('layer conv backward done: time %.3f' % (end - start))
 
+        return L, dAConv, dbConv, dAFC, dbFC
+
+    def update(self, L, dAConv, dbConv, dAFC, dbFC):
         # regularization
         L += 0.5 * self.lam * np.sum(self.conv.A * self.conv.A)
         L += 0.5 * self.lam * np.sum(self.fc.A * self.fc.A)
@@ -156,16 +149,28 @@ class CNN():
         self.conv.b += (0 - self.rho) * dbConv
         self.fc.b += (0 - self.rho) * dbFC
 
-        # save layers' settings to pickled file for future usage
-        save(self.conv.V, "conv.V")
-        save(self.conv.A, "conv.A")
-        save(self.conv.b, "conv.b")
-
-        save(self.fc.V, "fc.V")
-        save(self.fc.A, "fc.A")
-        save(self.fc.b, "fc.b")
-
-        #print(self.conv.A)
-        #print(self.fc.A)
-
         return L
+
+    def reload(self):
+        # reload all layers' parameters
+        self.conv.V = load_parameters(self.name + '_conv.V')
+        self.conv.A = load_parameters(self.name + '_conv.A')
+        self.conv.b = load_parameters(self.name + '_conv.b')
+        self.fc.V = load_parameters(self.name + '_fc.V')
+        self.fc.A = load_parameters(self.name + '_fc.A')
+        self.fc.b = load_parameters(self.name + '_fc.b')
+
+    def save(self):
+        # save all layers' parameters
+        save_parameters(self.name + '_conv.V', self.conv.V)
+        save_parameters(self.name + '_conv.A', self.conv.A)
+        save_parameters(self.name + '_conv.b', self.conv.b)
+        save_parameters(self.name + '_fc.V', self.fc.V)
+        save_parameters(self.name + '_fc.A', self.fc.A)
+        save_parameters(self.name + '_fc.b', self.fc.b)
+
+    def predict(self, X):
+        # output predicted classifications
+        self.reload()
+        R1, R2, R3, R4 = self.forward(X)
+        return R4
