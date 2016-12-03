@@ -46,19 +46,19 @@ class SparkCNN(CNN):
             X, Y = load_training_data(start, end)
             R1 = conv.forward(X)
             # save X
-            save(X, 'X_batch_' + str(batch))
+            # save(X, 'X_batch_' + str(batch))
             X = None
             R2 = relu.forward(R1)
             # save R1
-            save(R1, 'R1_batch_' + str(batch))
+            # save(R1, 'R1_batch_' + str(batch))
             R1 = None
             R3 = pool.forward(R2)
             # save R2
-            save(R2, 'R2_batch_' + str(batch))
+            # save(R2, 'R2_batch_' + str(batch))
             R2 = None
             R4 = fc.forward(R3)
             # save R3
-            save(R3, 'R3_batch_' + str(batch))
+            # save(R3, 'R3_batch_' + str(batch))
             R3 = None
 
             return [R4, Y]
