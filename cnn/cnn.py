@@ -22,6 +22,7 @@ class CNN():
 
         # logging settings
         self.verbose = True
+        self.load_data = True
 
     def init_layers(self, C):
         # initialize layers
@@ -31,19 +32,16 @@ class CNN():
         self.fc = FCLayer(16, 16, 64, C)
 
     def train(self, size = 1000):
-        classifications = load_classifications()
-        X, Y = load_training_data(0, size)
+        X = None
+        Y = None
+        if self.load_data:
+            X, Y = load_training_data(0, size)
         # input X images [N x W x H x D]
         # input Y labels [N]
-        N, W, H, D = X.shape
-        C = len(classifications)
-        self.init_layers(C)
-
         print('Start training CNN...')
-        print('Training data size: %d' % N)
+        print('Training data size: %d' % size)
 
         time_begin = time()
-
         for i in range(0, self.I):
             print('iteration %d:' % i)
             # forward

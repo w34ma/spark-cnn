@@ -20,21 +20,14 @@ class SparkCNN(CNN):
         spark = SparkSession.builder.appName('cnn').getOrCreate()
         self.sc = spark.sparkContext
 
-    def train(self, size = 1000):
+    def forward(self, X):
         conv = self.conv
         relu = self.relu
         pool = self.pool
         fc = self.fc
-        N = size
-        B = self.B
-        G = N // B # number of images processed for each batch
-        self.G = G
 
-        print('Start training CNN with Spark...')
-        print('Training data size: %d' % N)
-
-        time_begin = time()
-        sc = self.sc
+        N, W, H, D = X.shape
+        G = N // self.B # number of images in each batch
 
         # define forward funcion for spark map
         def forward_map(batch):
