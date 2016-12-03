@@ -1,6 +1,6 @@
 # spark enabled CNN
 from pyspark.sql import SparkSession
-
+import os
 import numpy as np
 from time import time
 from conv import ConvolutionLayer
@@ -65,10 +65,22 @@ class SparkCNN(CNN):
         def forward_map(batch):
             start = batch * G
             end = start + G
-            X, Y = load_training_data(start, end)
+
+            X_filename = 'dumps/X_' + str(start) + '_' + str(end)
+            Y_filename = 'dumps/Y_' + str(start) + '_' + str(end)
+
+            X = None
+            Y = None
+            if not os.path.isfile(X_filename + '.npy'):
+                X, Y = load_training_data(start, end)
+                np.save(X_filename, X)
+                np.save(Y_filename, Y)
+            else:
+                X = np.load(X_filename + '.npy')
+                Y = np.load(Y_filename + '.npy')
+
             R1 = conv.forward(X)
             # save X
-            np.save('dumps/X_batch_' + str(batch), X)
             X = None
             R2 = relu.forward(R1)
             # save R1
@@ -108,6 +120,9 @@ class SparkCNN(CNN):
             b = pair[0]
             dS = pair[1]
 
+            start = b * G
+            end = start + G
+
             # load R3
             R3 = np.load('dumps/R3_batch_' + str(b) + '.npy')
             dXFC, dAFC, dbFC = fc.backward(dS, R3)
@@ -124,7 +139,8 @@ class SparkCNN(CNN):
             R1 = None
 
             # load X
-            X = np.load('dumps/X_batch_' + str(b) + '.npy')
+            X_filename = 'dumps/X_' + str(start) + '_' + str(end)
+            X = np.load(X_filename + '.npy')
             dXConv, dAConv, dbConv = conv.backward(dXReLU, X)
             X = None
 
