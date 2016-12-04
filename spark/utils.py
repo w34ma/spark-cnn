@@ -3,20 +3,26 @@ import psutil
 import numpy as np
 import pickle
 
-curpath = os.path.dirname(os.path.realpath(__file__))
-dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
-parpath = os.path.join(curpath, 'parameters')
+from hdfs import InsecureClient
+
+def get_hdfs_client():
+    return InsecureClient('http://localhost:50070', root='/')
+
+dirpath = os.path.join('/', 'data', 'cifar10')
 
 def save_parameters(name, data):
-    name = name + '.params'
-    with open(os.path.join(parpath, name), 'wb') as f:
-        pickle.dump(data, f)
+    name = 'parameters/' + name + '.params'
+    client = get_hdfs_client()
+    with client.write(name, overwrite=True) as writer:
+        pickle.dump(data, writer)
 
 def load_parameters(name):
-    name = name + '.params'
+    # use hdfs
+    name = 'parameters/' + name + '.params'
     data = None
-    with open(os.path.join(parpath, name), 'rb') as f:
-        data = pickle.load(f)
+    client = get_hdfs_client()
+    with client.read(name) as reader:
+        data = pickle.load(reader)
     return data
 
 def load_classifications():
