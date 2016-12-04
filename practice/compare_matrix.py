@@ -67,6 +67,7 @@ print('Naive time cost: %.4f' % (navie_end - navie_start))
 print('Spark starts')
 spark_start = time()
 
+
 spark = SparkSession.builder.appName('matrix').getOrCreate()
 sc = spark.sparkContext
 

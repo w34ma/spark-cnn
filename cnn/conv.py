@@ -40,9 +40,22 @@ class ConvolutionLayer():
         W_ = (W - F + 2 * P) // S + 1
         H_ = (H - F + 2 * P) // S + 1
 
-        # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        R = np.dot(im2col(X, F, S, P), A.reshape(K, F * F * D).T) + b.T
+        im2col_start = time()
+        XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
+        im2col_end = time()
+        X = None
 
+        print('conv forward im2col done: time %.3f' % (im2col_end - im2col_start))
+
+        dot_start = time()
+        R = np.dot(XC, A.reshape(K, F * F * D).T) + b.T
+        dot_end = time()
+
+        print('conv forward at least memory used: %dMB' % ((XC.nbytes + R.nbytes) // 1024 // 1024))
+        XC = None
+        print('conv forward dot done: time %.3f' % (dot_end - dot_start))
+
+        
         return R.reshape(N, W_, H_, K)
 
     def backward(self, df, X):
@@ -79,12 +92,14 @@ class ConvolutionLayer():
         db = np.sum(df, axis=(0, 1, 2)).reshape(K, 1)
         t6 = time()
 
-        """
-        print('step 1: %.3f' % (t2 - t1))
-        print('step 2: %.3f' % (t3 - t2))
-        print('step 3: %.3f' % (t4 - t3))
-        print('step 4: %.3f' % (t5 - t4))
-        print('step 5: %.3f' % (t6 - t5))
-        """
+        
+        print('--convo backward np.dot: %.3f' % (t2 - t1))
+        print('--convo backward col2im: %.3f' % (t3 - t2))
+        print('--convo backward im2col: %.3f' % (t4 - t3))
+        print('--convo backward np.dot: %.3f' % (t5 - t4))
+        print('--convo backward np.sum: %.3f' % (t6 - t5))
+        
+        print('conv backward at least memory used: %dMB' % ((dX.nbytes + df.nbytes + XC.nbytes) // 1024 // 1024)) #XC > dA,dB
+
 
         return dX, dA, db
