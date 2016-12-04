@@ -27,17 +27,17 @@ class PoolingLayer():
         im2col_start = time()
         XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         im2col_end = time()
-        print('pool forward im2col done: time %.3f' % (im2col_end - im2col_start))
+        print('--pool forward im2col done: time %.3f' % (im2col_end - im2col_start))
 
         argmax_start = time()
         XI = np.argmax(XC, axis = 1)
         argmax_end = time()
-        print('pool forward argmax done: time %.3f' % (argmax_end - argmax_start))
+        print('--pool forward argmax done: time %.3f' % (argmax_end - argmax_start))
 
         transpose_start = time()
         R = XC[np.arange(XC.shape[0]), XI].reshape(N, D, W_, H_).transpose(0, 2, 3, 1)
         transpose_end = time()
-        print('pool forward transpose done: time %.3f' % (transpose_end - transpose_start))
+        print('--pool forward matrix transformation done: time %.3f' % (transpose_end - transpose_start))
 
         print('pool forward at least memory used: %dMB' % ((XC.nbytes + XI.nbytes + R.nbytes) // 1024 // 1024))
 
@@ -54,24 +54,28 @@ class PoolingLayer():
         N, W_, H_, D = df.shape
         _, W, H, _ = X.shape
 
-        dX_col = np.zeros((N * D * W_ * H_, F * F))
+        
         # XC: (N * D * W_ * H_) * (F * F)
         im2col_start = time()
         XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         im2col_end = time()
-        print('pool backward im2col done: time %.3f' % (im2col_end - im2col_start))
+        print('--pool backward im2col done: time %.3f' % (im2col_end - im2col_start))
 
         argmax_start = time()
         XI = np.argmax(XC, axis = 1)
         argmax_end = time()
-        print('pool forward argmax done: time %.3f' % (argmax_end - argmax_start))
+        print('--pool backward argmax done: time %.3f' % (argmax_end - argmax_start))
 
+        t1 = time()
+        dX_col = np.zeros((N * D * W_ * H_, F * F))
         dX_col[np.arange(XC.shape[0]), XI] = df.transpose(0, 3, 1, 2).flatten()
+        t2 = time()
+        print('--pool backward transformation done: time %.3f' % (t2 - t1))
 
         col2im_start = time()
         dX = col2im(dX_col, N * D, W, H, 1, F, S, 0).reshape(N, D, W, H).transpose(0, 2, 3, 1)
         col2im_end = time()
-        print('pool forward col2im done: time %.3f' % (col2im_end - col2im_start))
+        print('--pool backward col2im done: time %.3f' % (col2im_end - col2im_start))
 
         print('pool backward at least memory used: %dMB' % ((XC.nbytes + dX_col.nbytes + X.nbytes) // 1024 // 1024))
         # print('pool backward at least memory used: %dMB' % ((dX.nbytes + dX_col.nbytes) // 1024 // 1024))
