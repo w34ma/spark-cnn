@@ -42,7 +42,6 @@ class ConvolutionLayer():
 
         # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
         R = np.dot(im2col(X, F, S, P), A.reshape(K, F * F * D).T) + b.T
-
         return R.reshape(N, W_, H_, K)
 
     def backward(self, df, X):
@@ -62,16 +61,12 @@ class ConvolutionLayer():
         # stretch gradients to [(N x W_ x H_) x (F x F x D)]
         # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
         # then get gradients on X
-        t1 = time()
-        dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
-        t2 = time()
-        # dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
-        dX = col2im(dXC, N, W, H, D, F, S, P)
-        t3 = time()
+        # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
+        dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
+        # dX = col2im(dXC, N, W, H, D, F, S, P)
         XC = im2col(X, F, S, P)
-        t4 = time()
-        dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
-        t5 = time()
+        dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
+        # dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
 
         # stretch original input to calculate gradients on filters
         # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]

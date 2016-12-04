@@ -3,6 +3,9 @@ cnn/logs/
 cnn/parameters/*.params
 cnn/dumps/*.npy
 
+spark/parameters/*.params
+spark/dumps/*.npy
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
