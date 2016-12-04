@@ -25,10 +25,10 @@ class CNN():
 
     def init_layers(self, C):
         # initialize layers
-        self.conv = ConvolutionLayer(32, 5, 1, 3, 2)
+        self.conv = ConvolutionLayer(64, 3, 1, 3, 1)
         self.relu = ReLULayer()
         self.pool = PoolingLayer(2, 2)
-        self.fc = FCLayer(16, 16, 32, C)
+        self.fc = FCLayer(16, 16, 64, C)
 
     def train(self, size = 1000):
         X, Y = load_training_data(0, size)

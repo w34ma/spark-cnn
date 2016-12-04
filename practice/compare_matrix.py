@@ -67,7 +67,8 @@ print('Naive time cost: %.4f' % (navie_end - navie_start))
 print('Spark starts')
 spark_start = time()
 
-spark = SparkSession.builder.appName('cnn').getOrCreate()
+
+spark = SparkSession.builder.appName('matrix').getOrCreate()
 sc = spark.sparkContext
 
 a = []
@@ -92,4 +93,3 @@ print('Spark ends')
 print('Spark time cost: %.4f' % (spark_end - spark_start))
 
 assert np.allclose(result_spark, R), 'failed'
-
