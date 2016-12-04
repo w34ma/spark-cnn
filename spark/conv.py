@@ -64,7 +64,7 @@ class ConvolutionLayer():
         # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
         dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
         # dX = col2im(dXC, N, W, H, D, F, S, P)
-        XC = im2col(X, F, S, P)
+        # XC = im2col(X, F, S, P)
         dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
         # dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
 
@@ -72,7 +72,6 @@ class ConvolutionLayer():
         # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
         # dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
         db = np.sum(df, axis=(0, 1, 2)).reshape(K, 1)
-        t6 = time()
 
         """
         print('step 1: %.3f' % (t2 - t1))
