@@ -14,10 +14,9 @@ from cnn import CNN
 class SparkCNN(CNN):
     def __init__(self, I, B):
         CNN.__init__(self, I)
-        # self.name = 'spark_cnn'
         self.B = B # number of batches
         # create spark context
-        spark = SparkSession.builder.appName('cnn').getOrCreate()
+        spark = SparkSession.builder.appName('spark-cnn').getOrCreate()
         self.sc = spark.sparkContext
 
     def train(self, size = 1000):
@@ -42,11 +41,11 @@ class SparkCNN(CNN):
 
             # update parameters
             L = self.update(L, dAConv, dbConv, dAFC, dbFC)
-            self.save()
 
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
 
+        self.save()
         time_end = time()
         print('training done, total time consumption %.3f' % (time_end - time_begin))
 

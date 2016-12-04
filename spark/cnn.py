@@ -55,11 +55,11 @@ class CNN():
 
             # update parameters
             L = self.update(L, dAConv, dbConv, dAFC, dbFC)
-            self.save()
 
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
 
+        self.save()
         time_end = time()
         print('training done, total time consumption %.3f' % (time_end - time_begin))
 
