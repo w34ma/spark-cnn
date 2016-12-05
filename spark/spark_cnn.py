@@ -65,33 +65,22 @@ class SparkCNN(CNN):
             start = batch * G
             end = start + G
 
-            X_filename = 'dumps/X_' + str(start) + '_' + str(end)
-            Y_filename = 'dumps/Y_' + str(start) + '_' + str(end)
-
-            X = None
-            Y = None
-            if not os.path.isfile(X_filename + '.npy'):
-                X, Y = load_training_data(start, end)
-                np.save(X_filename, X)
-                np.save(Y_filename, Y)
-            else:
-                X = np.load(X_filename + '.npy')
-                Y = np.load(Y_filename + '.npy')
-
+            X, Y = load_training_data(start, end)
             R1 = conv.forward(X)
             # save X
+            save_matrix('X_batch_' + str(batch), X)
             X = None
             R2 = relu.forward(R1)
             # save R1
-            np.save('dumps/R1_batch_' + str(batch), R1)
+            save_matrix('R1_batch_' + str(batch), R1)
             R1 = None
             R3 = pool.forward(R2)
             # save R2
-            np.save('dumps/R2_batch_' + str(batch), R2)
+            save_matrix('R2_batch_' + str(batch), R2)
             R2 = None
             R4 = fc.forward(R3)
             # save R3
-            np.save('dumps/R3_batch_' + str(batch), R3)
+            save_matrix('R3_batch_' + str(batch), R3)
             R3 = None
             return [batch, R4, Y]
 
@@ -123,23 +112,22 @@ class SparkCNN(CNN):
             end = start + G
 
             # load R3
-            R3 = np.load('dumps/R3_batch_' + str(b) + '.npy')
+            R3 = load_matrix('R3_batch_' + str(b))
             dXFC, dAFC, dbFC = fc.backward(dS, R3)
             R3 = None
 
             # load R2
-            R2 = np.load('dumps/R2_batch_' + str(b) + '.npy')
+            R2 = load_matrix('R2_batch_' + str(b))
             dXPool = pool.backward(dXFC, R2)
             R2 = None
 
             # load R1
-            R1 = np.load('dumps/R1_batch_' + str(b) + '.npy')
+            R1 = load_matrix('R1_batch_' + str(b))
             dXReLU = relu.backward(dXPool, R1)
             R1 = None
 
             # load X
-            X_filename = 'dumps/X_' + str(start) + '_' + str(end)
-            X = np.load(X_filename + '.npy')
+            X = load_matrix('X_batch_' + str(b))
             dXConv, dAConv, dbConv = conv.backward(dXReLU, X)
             X = None
 

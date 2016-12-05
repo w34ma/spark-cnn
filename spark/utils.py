@@ -25,6 +25,20 @@ def load_parameters(name):
         data = pickle.load(reader)
     return data
 
+def save_matrix(name, data):
+    name = 'matrices/' + name + '.matrix'
+    client = get_hdfs_client()
+    with client.write(name, overwrite=True) as writer:
+        pickle.dump(data, writer)
+
+def load_matrix(name):
+    name = 'matrices/' + name + '.matrix'
+    data = None
+    client = get_hdfs_client()
+    with client.read(name) as reader:
+        data = pickle.load(reader)
+    return data
+
 def load_classifications():
     print('Loading classifications...')
     classifications = None
