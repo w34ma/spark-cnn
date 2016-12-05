@@ -3,11 +3,12 @@ import sys
 import numpy as np
 from utils import *
 from spark_cnn import SparkCNN
+from time import time
 
 def test(size, batches):
-    X, Y = load_training_data(0, size)
+    start = time()
     cnn = SparkCNN(0, batches)
-    P = cnn.predict(size)
+    P, Y = cnn.predict(size)
     P = np.argmax(P, 1)
     print('Batches: %d' % batches)
     print('Prediction:')
@@ -19,7 +20,8 @@ def test(size, batches):
     C = [x for x in C if x[0] == x[1]]
     print('Correct:')
     print('%d/%d' % (len(C), size))
-
+    end = time()
+    print('Total time consumption: %.3f' % (end - start))
 
 if __name__ == '__main__':
     size = 2000

@@ -72,12 +72,15 @@ class SparkCNN(CNN):
             R2 = None
             R4 = fc.forward(R3)
             R3 = None
-            return R4
+            return [R4, Y]
 
         def forward_reduce(a, b):
-            return np.append(a, b, 0)
+            R4 = np.append(a[0], b[0], 0)
+            Y = np.append(a[1], b[1], 0)
+            return [R4, Y]
 
-        return sc.parallelize(range(B)).map(forward_map).reduce(forward_reduce)
+        R = sc.parallelize(range(B)).map(forward_map).reduce(forward_reduce)
+        return R[0], R[1]
 
     def forward(self, N):
         conv = self.conv
