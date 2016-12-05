@@ -63,7 +63,7 @@ class SparkCNN(CNN):
         def forward_map(batch):
             start = batch * G
             end = start + G
-            X = load_testing_data(start, end)
+            X, Y = load_testing_data(start, end)
             R1 = conv.forward(X)
             X = None
             R2 = relu.forward(R1)
