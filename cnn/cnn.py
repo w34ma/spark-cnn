@@ -21,7 +21,7 @@ class CNN():
         self.lam = 0.1 # regularization strength
 
         # logging settings
-        self.verbose = False
+        self.verbose = True
 
     def init_layers(self, C):
         # initialize layers
