@@ -3,17 +3,17 @@ from time import time
 from pyspark.sql import SparkSession
 
 # images
-N = 10
+N = 1000
 W = 32
 H = 32
 D = 3
 
 # filter
-K = 64
-F = 3
+K = 32
+F = 5
 S = 1
 D = 3
-P = 1
+P = 2
 
 # after filter
 W_ = (W - F + 2 * P) // S + 1
@@ -35,6 +35,7 @@ R = np.dot(M1, M2)
 np_end = time()
 print('Numpy ends')
 print('Numpy time cost: %.4f' % (np_end - np_start))
+
 
 rowM1 = len(M1)
 colM1 = len(M1[0])
