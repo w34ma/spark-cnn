@@ -9,11 +9,11 @@ H = 32
 D = 3
 
 # filter
-K = 64
-F = 3
+K = 32
+F = 5
 S = 1
 D = 3
-P = 1
+P = 2
 
 # after filter
 W_ = (W - F + 2 * P) // S + 1
