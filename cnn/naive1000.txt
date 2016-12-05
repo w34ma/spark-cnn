@@ -1,0 +1,34 @@
+Loading classifications...
+Reading training set...
+Loading cifar10 data from 0 to 999
+Start training CNN...
+Training data size: 1000
+iteration 0:
+--conv forward im2col done: time 0.094
+--conv forward dot done: time 0.508
+conv forward at least memory used: 710MB
+layer conv forward done: time 0.603
+layer relu forward done: time 0.296
+--pool forward im2col done: time 0.942
+--pool forward argmax done: time 0.211
+--pool forward matrix transformation done: time 0.164
+pool forward at least memory used: 750MB
+layer pool forward done: time 1.319
+layer fc forward done: time 0.097
+layer fc backward done: time 0.321
+--pool backward im2col done: time 1.149
+--pool backward argmax done: time 0.214
+--pool backward transformation done: time 0.403
+--pool backward col2im done: time 0.401
+pool backward at least memory used: 1500MB
+layer pool backward done: time 2.206
+layer relu backward done: time 0.434
+--conv backward im2col done: time 0.092
+--conv backward np.dot: 0.830
+--conv backward col2im: 0.089
+--conv backward np.dot: 0.453
+--conv backward np.sum: 0.046
+conv backward at least memory used: 734MB
+layer conv backward done: time 1.550
+forward time 2.315, backward time 4.512, loss 2.503 
+training done, total time consumption 6.833

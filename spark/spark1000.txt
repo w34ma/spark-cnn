@@ -1,0 +1,6 @@
+Loading classifications...
+Start training CNN with Spark...
+Training data size: 1000
+iteration 0
+forward time 21.030, backward time 5.504, loss 2.506 
+training done, total time consumption 34.701

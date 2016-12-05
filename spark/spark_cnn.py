@@ -49,6 +49,36 @@ class SparkCNN(CNN):
         time_end = time()
         print('training done, total time consumption %.3f' % (time_end - time_begin))
 
+    def predict(self, size = 10000):
+        self.reload()
+        B = self.B
+        G = size // B
+
+        conv = self.conv
+        relu = self.relu
+        pool = self.pool
+        fc = self.fc
+        sc = self.sc
+
+        def forward_map(batch):
+            start = batch * G
+            end = start + G
+            X = load_testing_data(start, end)
+            R1 = conv.forward(X)
+            X = None
+            R2 = relu.forward(R1)
+            R1 = None
+            R3 = pool.forward(R2)
+            R2 = None
+            R4 = fc.forward(R3)
+            R3 = None
+            return R4
+
+        def forward_reduce(a, b):
+            return np.append(a, b, 0)
+
+        return sc.parallelize(range(B)).map(forward_map).reduce(forward_reduce)
+
     def forward(self, N):
         conv = self.conv
         relu = self.relu
