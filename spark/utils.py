@@ -6,7 +6,7 @@ import pickle
 from hdfs import InsecureClient
 
 def get_hdfs_client():
-    return InsecureClient('http://localhost:50070', root='/')
+    return InsecureClient('http://192.168.1.20:50070', root='/')
 
 dirpath = os.path.join('/', 'data', 'cifar10')
 
