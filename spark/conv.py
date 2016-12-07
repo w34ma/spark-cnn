@@ -2,8 +2,8 @@
 import numpy as np
 import math
 from time import time
-from matrix import *
-from utils import *
+from spark.matrix import *
+from spark.utils import *
 
 class ConvolutionLayer():
     def __init__(self, K, F, S, D, P):

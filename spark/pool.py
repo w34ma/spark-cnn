@@ -1,4 +1,4 @@
-from matrix import *
+from spark.matrix import *
 
 # pooling layer, using max pooling
 class PoolingLayer():
@@ -22,7 +22,7 @@ class PoolingLayer():
         H_ = (H - F) // S + 1
 
         # XC: (N * D * W_ * H_) * (F * F)
-        # [(N x D) x W x H x 1] => [(N x D x W_ x H_) x (F x F)] 
+        # [(N x D) x W x H x 1] => [(N x D x W_ x H_) x (F x F)]
         XC = im2col(X.transpose(0, 3, 1, 2).reshape(N * D, 1, W, H).transpose(0, 2, 3, 1), F, S, 0)
         XI = np.argmax(XC, axis = 1)
         return XC[np.arange(XC.shape[0]), XI].reshape(N, D, W_, H_).transpose(0, 2, 3, 1)

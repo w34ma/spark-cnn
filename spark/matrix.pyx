@@ -1,6 +1,5 @@
 # matrix manipulation helpers im2col and col2im
 import numpy as np
-from utils import *
 cimport numpy as np
 
 # declare external C++ functions

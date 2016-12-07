@@ -1,6 +1,6 @@
 import sys
-from utils import *
-from spark_cnn import SparkCNN
+from spark.utils import *
+from spark.spark_cnn import SparkCNN
 
 
 def run(size, iteration, batch):

@@ -1,10 +1,10 @@
 import numpy as np
 from time import time
-from conv import ConvolutionLayer
-from relu import ReLULayer
-from pool import PoolingLayer
-from fc import FCLayer
-from utils import *
+from spark.conv import ConvolutionLayer
+from spark.relu import ReLULayer
+from spark.pool import PoolingLayer
+from spark.fc import FCLayer
+from spark.utils import *
 
 class CNN():
     def __init__(self, I):
