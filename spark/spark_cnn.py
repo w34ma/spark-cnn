@@ -78,7 +78,7 @@ class SparkCNN(CNN):
             Y = np.append(a[1], b[1], 0)
             return [R4, Y]
 
-        R = sc.parallelize(range(B)).map(forward_map).reduce(forward_reduce)
+        R = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
         return R[0], R[1]
 
     def forward(self, N):
@@ -122,7 +122,7 @@ class SparkCNN(CNN):
             Y = np.append(a[2], b[2], 0)
             return [batches, R4, Y]
 
-        R = sc.parallelize(range(B)).map(forward_map).reduce(forward_reduce)
+        R = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
         return R[0], R[1], R[2]
 
     def backward(self, batches, dS):
@@ -175,7 +175,7 @@ class SparkCNN(CNN):
             dS_b = dS[b * G:b * G + G, :]
             pairs.append([b, dS_b])
 
-        R = sc.parallelize(pairs).map(backward_map).reduce(backward_reduce)
+        R = sc.parallelize(pairs, len(pairs)).map(backward_map).reduce(backward_reduce)
         dAConv = R[0]
         dbConv = R[1]
         dAFC = R[2]
