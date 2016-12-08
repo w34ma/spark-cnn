@@ -14,7 +14,7 @@ cmdclass.update({
 ext_modules += [
     Extension(
         'spark.matrix',
-        sources=['matrix.pyx', 'matrix_c.c'],
+        sources=['spark/matrix.pyx', 'spark/matrix_c.c'],
         include_dirs=[np.get_include()]
     )
 ]
@@ -22,7 +22,7 @@ ext_modules += [
 setup(
     name = 'spark',
     version = '1.0.0',
-    packages = find_packages(exclude=['tf-cnn']),
+    packages = find_packages(exclude=['tf-cnn/*']),
     install_requires = ['numpy', 'cython'],
     cmdclass = cmdclass,
     ext_modules = cythonize(ext_modules)
