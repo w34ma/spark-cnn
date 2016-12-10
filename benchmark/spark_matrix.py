@@ -7,7 +7,7 @@ from time import time
 spark = SparkSession.builder.appName('matrix-multiplication').getOrCreate()
 sc = spark.sparkContext
 
-N = 100
+N = 1000
 W = 32
 H = 32
 K = 32
@@ -73,7 +73,7 @@ def inout_matrix(A, B):
     return C
 
 C1 = numpy_matrix(A, B)
-C2 = split_matrix(A, B, 5)
+C2 = split_matrix(A, B, 2)
 C3 = inout_matrix(A, B)
 
 assert np.allclose(C1, C2), 'failed C1 != C2'
