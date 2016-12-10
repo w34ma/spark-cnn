@@ -7,7 +7,7 @@ from time import time
 spark = SparkSession.builder.appName('matrix-multiplication').getOrCreate()
 sc = spark.sparkContext
 
-N = 1000
+N = 100
 W = 32
 H = 32
 K = 32
