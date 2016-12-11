@@ -6,10 +6,10 @@ from spark.spark_cnn import SparkCNN
 from time import time
 
 def test(size, batches):
-    print('Testing Spark CNN for %d testing images (%d batches)' % (size, batches))
+    print('Testing Spark CNN for %d training images (%d batches)' % (size, batches))
     start = time()
     cnn = SparkCNN(0, batches)
-    P, Y = cnn.predict(size)
+    P, Y = cnn.predict_train(size)
     P = np.argmax(P, 1)
     print('Batches: %d' % batches)
     print('Prediction:')

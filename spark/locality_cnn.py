@@ -10,9 +10,10 @@ from spark.fc import FCLayer
 from spark.utils import *
 from spark.cnn import CNN
 
-class SparkCNN(CNN):
+class LocalityCNN(CNN):
     def __init__(self, I, B):
         CNN.__init__(self, I)
+        self.name = 'locality_cnn'
         self.B = B # number of batches
         # create spark context
         spark = SparkSession.builder.appName('locality-cnn').getOrCreate()

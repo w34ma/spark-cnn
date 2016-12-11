@@ -17,7 +17,7 @@ class SparkCNN(CNN):
         # self.name = 'spark_cnn'
         self.B = B # number of batches
         # create spark context
-        spark = SparkSession.builder.appName('cnn').getOrCreate()
+        spark = SparkSession.builder.appName('spark-cnn').getOrCreate()
         self.sc = spark.sparkContext
 
     def train(self, size = 1000):

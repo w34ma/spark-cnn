@@ -3,6 +3,8 @@ cnn/logs/
 cnn/parameters/*.params
 cnn/dumps/*.npy
 
+tf-cnn
+
 spark/parameters/*.params
 spark/dumps/*.npy
 

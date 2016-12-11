@@ -9,6 +9,19 @@ def get_hdfs_client():
     return InsecureClient('http://192.168.1.20:50070', root='/')
 
 dirpath = os.path.join('/', 'data', 'cifar10')
+perpath = os.path.join('/', 'data', 'parameters')
+
+def save_parameters_local(name, data):
+    name = os.path.join(perpath, name + '.params')
+    with open(name, 'wb') as f:
+        pickle.dump(data, f)
+
+def load_parameters_local(name):
+    name = os.path.join(perpath, name + '.params')
+    data = None
+    with open(name, 'rb') as f:
+        data = pickle.load(f)
+    return data
 
 def save_parameters(name, data):
     name = 'parameters/' + name + '.params'

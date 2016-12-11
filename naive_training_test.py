@@ -2,16 +2,16 @@
 import sys
 import numpy as np
 from spark.utils import *
-from spark.spark_cnn import SparkCNN
+from spark.cnn import CNN
 from time import time
 
-def test(size, batches):
-    print('Testing Spark CNN for %d testing images (%d batches)' % (size, batches))
+def test(size):
     start = time()
-    cnn = SparkCNN(0, batches)
-    P, Y = cnn.predict(size)
+    cnn = CNN(0)
+    X, Y = load_training_data(0, size)
+    P = cnn.predict(X)
     P = np.argmax(P, 1)
-    print('Batches: %d' % batches)
+    print('Testing naive CNN for %d training images' % (size))
     print('Prediction:')
     print(P)
     print('Answer:')
@@ -26,5 +26,4 @@ def test(size, batches):
 
 if __name__ == '__main__':
     size = int(sys.argv[1]) if len(sys.argv) > 1 else 10000
-    batches = int(sys.argv[2]) if len(sys.argv) > 2 else 4
-    test(size, batches)
+    test(size)

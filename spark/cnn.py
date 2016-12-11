@@ -145,21 +145,21 @@ class CNN():
 
     def reload(self):
         # reload all layers' parameters
-        self.conv.V = load_parameters(self.name + '_conv.V')
-        self.conv.A = load_parameters(self.name + '_conv.A')
-        self.conv.b = load_parameters(self.name + '_conv.b')
-        self.fc.V = load_parameters(self.name + '_fc.V')
-        self.fc.A = load_parameters(self.name + '_fc.A')
-        self.fc.b = load_parameters(self.name + '_fc.b')
+        self.conv.V = load_parameters_local(self.name + '_conv.V')
+        self.conv.A = load_parameters_local(self.name + '_conv.A')
+        self.conv.b = load_parameters_local(self.name + '_conv.b')
+        self.fc.V = load_parameters_local(self.name + '_fc.V')
+        self.fc.A = load_parameters_local(self.name + '_fc.A')
+        self.fc.b = load_parameters_local(self.name + '_fc.b')
 
     def save(self):
         # save all layers' parameters
-        save_parameters(self.name + '_conv.V', self.conv.V)
-        save_parameters(self.name + '_conv.A', self.conv.A)
-        save_parameters(self.name + '_conv.b', self.conv.b)
-        save_parameters(self.name + '_fc.V', self.fc.V)
-        save_parameters(self.name + '_fc.A', self.fc.A)
-        save_parameters(self.name + '_fc.b', self.fc.b)
+        save_parameters_local(self.name + '_conv.V', self.conv.V)
+        save_parameters_local(self.name + '_conv.A', self.conv.A)
+        save_parameters_local(self.name + '_conv.b', self.conv.b)
+        save_parameters_local(self.name + '_fc.V', self.fc.V)
+        save_parameters_local(self.name + '_fc.A', self.fc.A)
+        save_parameters_local(self.name + '_fc.b', self.fc.b)
 
     def predict(self, X):
         # output predicted classifications
