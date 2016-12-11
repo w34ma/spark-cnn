@@ -91,9 +91,8 @@ class LocalityCNN(SparkCNN):
             return [R4, Y]
 
         def forward_reduce(a, b):
-            batches = np.append(a[0], b[0])
-            R4 = np.append(a[1], b[1], 0)
-            Y = np.append(a[2], b[2], 0)
+            R4 = np.append(a[0], b[0], 0)
+            Y = np.append(a[1], b[1], 0)
             return [R4, Y]
 
         R = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
@@ -113,8 +112,8 @@ class LocalityCNN(SparkCNN):
         # first broadcast dS to all nodes
         dS_broadcasted = sc.broadcast(dS)
 
-        def backward_map(file_name, batch):
-            b = int(batch)
+        def backward_map(batch):
+            b = int(batch[1])
             dS = dS_broadcasted.value[b * G:b * G + G, :]
 
             # load R3
@@ -143,7 +142,7 @@ class LocalityCNN(SparkCNN):
             return np.sum([a, b], 0)
 
         # create RDD from hdfs directory
-        R = sc.wholeTextFiles(get_hdfs_address() + '/batches')
+        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches') \
             .map(backward_map).reduce(backward_reduce)
 
         dAConv = R[0]

@@ -3,10 +3,10 @@ from spark.utils import *
 from spark.locality_cnn import LocalityCNN
 
 def run(size, iteration, batch):
-    scnn = SparkCNN(iteration, batch)
+    cnn = LocalityCNN(iteration, batch)
     print('Training Locality CNN with %d iterations (%d batches) for %d images' %
           (iteration, batch, size))
-    scnn.train(size)
+    cnn.train(size)
 
 if __name__ == '__main__':
     size = int(sys.argv[1]) if len(sys.argv) > 1 else 1000

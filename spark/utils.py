@@ -2,14 +2,20 @@ import os
 import psutil
 import numpy as np
 import pickle
-
 from hdfs import InsecureClient
 
-def get_hdfs_client():
-    return InsecureClient('http://192.168.1.20:50070', root='/')
-
+# constants
 dirpath = os.path.join('/', 'data', 'cifar10')
 perpath = os.path.join('/', 'data', 'parameters')
+
+def get_hdfs_address():
+    return 'http://192.168.1.20:50070'
+
+def get_hdfs_address_spark():
+    return 'hdfs://192.168.1.20:9000'
+
+def get_hdfs_client():
+    return InsecureClient(get_hdfs_address(), root='/')
 
 def save_parameters_local(name, data):
     name = os.path.join(perpath, name + '.params')
@@ -51,6 +57,15 @@ def load_matrix(name):
     with client.read(name) as reader:
         data = pickle.load(reader)
     return data
+
+def save_batch(batch):
+    name = 'batches/' + str(batch) + '.batch'
+    client = get_hdfs_client()
+    client.write(name, str(batch), overwrite=True)
+
+def clear_batches():
+    client = get_hdfs_client()
+    client.delete('batches', recursive=True)
 
 def load_classifications():
     print('Loading classifications...')
