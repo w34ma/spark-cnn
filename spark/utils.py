@@ -95,6 +95,15 @@ def load_matrix_redis(key):
             continue
     return data
 
+def clear_matrix_redis():
+    for server in redis_addresses:
+        host = server[0]
+        port = server[1]
+        client = redis(host=host, port=port, db=0)
+        try:
+            client.flushdb()
+        except Exception as error:
+            continue
 
 def save_batch(batch):
     name = 'batches/' + str(batch) + '.batch'

@@ -35,6 +35,7 @@ class LocalityCNN(SparkCNN):
 
             # clear batch files
             clear_batches()
+            clear_matrix_redis()
 
             # forward
             start = time()
