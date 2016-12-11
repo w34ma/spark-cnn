@@ -1,25 +1,7 @@
-import tensorflow as tf
-import numpy as np
-import os
-import glob
-import time
 from tf_pip_read import *
 from tf_pip_model import *
-
-CIFAR10_PATH = '../cifar10-bin'
-CHECKPOINT_DIR = 'tf-backup'
-TRAIN_EPOCH_NUM = 50000
-TEST_EPOCH_NUM = 10000
-ITERATION_NUM = 10000
-LABEL_NUM = 10
-DEVICE_REP = False
-
-FRAC_MIN_QUEUE_SIZE = 0.4
-BATCH_SIZE = 32
-LABEL_SIZE = 1
-IMAGE_HEIGHT = 32
-IMAGE_WIDTH = 32
-IMAGE_DEPTH = 3
+from config import *
+import psutil
 
 def train():
     with tf.Graph().as_default():
@@ -33,6 +15,7 @@ def train():
         class _LoggerHook(tf.train.SessionRunHook):
             def begin(self):
                 self._step = -1;
+                self.process = psutil.Process(os.getpid())
         
             def before_run(self, run_context):
                 self._step += 1
@@ -42,13 +25,14 @@ def train():
             def after_run(self, run_context, run_values):
                 duration = time.time() - self._start_time
                 loss_value = run_values.results
+                print("time = %f" % duration)
+                mem = (self.process.get_memory_info()[0] / float(2 ** 20))
+                print("memory usage %f MB" % mem)
                 if self._step % 100 == 0:
-                    print("current loss value: %f" % loss_value)
-
-        class _CheckHook(tf.train.CheckpointSaverHook):
-             def __init__:
+                    print("acc = %f" % loss_value)
+    
                 
-        with tf.train.MonitoredTrainingSession(hooks=[tf.train.StopAtStepHook(last_step = ITERATION_NUM), tf.train.NanTensorHook(loss), _LoggerHook(), _CheckHook()]) as mon_sess:
+        with tf.train.MonitoredTrainingSession(hooks=[tf.train.StopAtStepHook(last_step = ITERATION_NUM), tf.train.NanTensorHook(loss), _LoggerHook()], checkpoint_dir = CHECKPOINT_DIR, save_checkpoint_secs = 30) as mon_sess:
             while not mon_sess.should_stop():
                 mon_sess.run(train_op)     
 

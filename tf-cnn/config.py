@@ -1,0 +1,22 @@
+import tensorflow as tf
+import numpy as np
+import os
+import glob
+import time
+
+CIFAR10_PATH = '../cifar10-bin'
+CHECKPOINT_DIR = 'tf-backup'
+TRAIN_EPOCH_NUM = 50000
+TEST_EPOCH_NUM = 10000
+ITERATION_NUM = 4000
+LABEL_NUM = 10
+MOVING_AVE_DECAY = 0.99
+FRAC_MIN_QUEUE_SIZE = 0.4
+
+BATCH_SIZE = 4000
+LABEL_SIZE = 1
+IMAGE_HEIGHT = 32
+IMAGE_WIDTH = 32
+IMAGE_DEPTH = 3
+DEVICE_REP = False
+

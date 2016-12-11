@@ -5,6 +5,7 @@ import glob
 import random
 import cPickle
 import time
+import psutil
 
 CIFAR10_PATH = '../cifar10-bin'
 TRAIN_EPOCH_NUM = 50000
@@ -13,7 +14,7 @@ ITERATION_NUM = 10000
 LABEL_NUM = 10
 
 FRAC_MIN_QUEUE_SIZE = 0.4
-BATCH_SIZE = 512
+BATCH_SIZE = 1000
 LABEL_SIZE = 1
 IMAGE_HEIGHT = 32
 IMAGE_WIDTH = 32
@@ -92,7 +93,7 @@ def read_data(type):
     result = reader(type)
     return result
 
-def train():
+def train(process):
     x = tf.placeholder(tf.float32, shape = [BATCH_SIZE, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_DEPTH]) 
     y = tf.placeholder(tf.float32, shape = [BATCH_SIZE, LABEL_NUM])
     cnn_y = build_model(x)
@@ -107,8 +108,13 @@ def train():
         sess.run(tf.initialize_all_variables())
         print "start training"
         for i in range(ITERATION_NUM):
+            start = time.time()
             image, label = train_data.get(BATCH_SIZE)
             train_step.run(feed_dict = {x: image, y: label})
+            dt = time.time() - start
+            print("time for iteration %d is %f" % (i, dt))
+            mem = (process.get_memory_info()[0] / float(2 ** 20))
+            print("memory usage %f MB: " % mem)
             if i % 10 == 0:
                 print("Now it's the %d round " % i)
                 im, lb = test_data.get(BATCH_SIZE)
@@ -116,4 +122,5 @@ def train():
                 print("accuracy now is : %f " % train_acc)
 
 if __name__ == '__main__':
-    train()
+    process = psutil.Process(os.getpid())
+    train(process)
