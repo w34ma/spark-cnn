@@ -10,7 +10,10 @@ dirpath = os.path.join('/', 'data', 'cifar10')
 perpath = os.path.join('/', 'data', 'parameters')
 
 redis_addresses = [
-    ('localhost', 6379)
+    ('localhost', 6379),
+    ('himrod-5', 6379),
+    ('himrod-6', 6379),
+    ('himrod-7', 6379)
 ]
 
 def get_hdfs_address():
