@@ -1,4 +1,4 @@
-# spark enabled CNN
+# spark enabled CNN with locality
 from pyspark.sql import SparkSession
 import os
 import numpy as np
@@ -15,7 +15,7 @@ class SparkCNN(CNN):
         CNN.__init__(self, I)
         self.B = B # number of batches
         # create spark context
-        spark = SparkSession.builder.appName('spark-cnn').getOrCreate()
+        spark = SparkSession.builder.appName('locality-cnn').getOrCreate()
         self.sc = spark.sparkContext
 
     def predict(self, size = 10000):
@@ -51,6 +51,7 @@ class SparkCNN(CNN):
         R = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
         return R[0], R[1]
 
+
     def train(self, size = 1000):
         print('Start training CNN with Spark...')
         print('Training data size: %d' % size)
@@ -59,16 +60,18 @@ class SparkCNN(CNN):
         for i in range(0, self.I):
             print('iteration %d' % i)
 
+            # clear batch files
+            clear_batches()
+
             # forward
             start = time()
-            batches, R4, Y = self.forward(size)
+            R4, Y = self.forward(size)
             middle = time()
 
             # calculate loss and gradients
             L, dS = softmax(R4, Y)
 
-            # backward
-            dAConv, dbConv, dAFC, dbFC = self.backward(batches, dS)
+            dAConv, dbConv, dAFC, dbFC = self.backward(dS)
             end = time()
 
             # update parameters
@@ -114,18 +117,22 @@ class SparkCNN(CNN):
             # save R3
             save_matrix('R3_batch_' + str(batch), R3)
             R3 = None
-            return [batch, R4, Y]
+
+            # save batch numbers to take advantage of locality
+            save_batch(batch)
+
+            return [R4, Y]
 
         def forward_reduce(a, b):
             batches = np.append(a[0], b[0])
             R4 = np.append(a[1], b[1], 0)
             Y = np.append(a[2], b[2], 0)
-            return [batches, R4, Y]
+            return [R4, Y]
 
         R = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
-        return R[0], R[1], R[2]
+        return R[0], R[1]
 
-    def backward(self, batches, dS):
+    def backward(self, dS):
         # backward
         B = self.B
         G = self.G
@@ -136,9 +143,12 @@ class SparkCNN(CNN):
         fc = self.fc
         sc = self.sc
 
-        def backward_map(pair):
-            b = pair[0]
-            dS = pair[1]
+        # first broadcast dS to all nodes
+        dS_broadcasted = sc.broadcast(dS)
+
+        def backward_map(file_name, batch):
+            b = int(batch)
+            dS = dS_broadcasted.value[b * G:b * G + G, :]
 
             # load R3
             R3 = load_matrix('R3_batch_' + str(b))
@@ -165,14 +175,10 @@ class SparkCNN(CNN):
         def backward_reduce(a, b):
             return np.sum([a, b], 0)
 
-        # construct collection for map reduce
-        pairs = []
-        for i in range(0, len(batches)):
-            b = batches[i]
-            dS_b = dS[b * G:b * G + G, :]
-            pairs.append([b, dS_b])
+        # create RDD from hdfs directory
+        R = sc.wholeTextFiles(get_hdfs_address() + '/batches')
+            .map(backward_map).reduce(backward_reduce)
 
-        R = sc.parallelize(pairs, len(pairs)).map(backward_map).reduce(backward_reduce)
         dAConv = R[0]
         dbConv = R[1]
         dAFC = R[2]
