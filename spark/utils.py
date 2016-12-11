@@ -6,21 +6,21 @@ from hdfs import InsecureClient
 from redis import StrictRedis as redis
 
 # constants
-dirpath = os.path.join('/', 'data', 'cifar10')
-perpath = os.path.join('/', 'data', 'parameters')
+dirpath = os.path.join('/home/w34ma', 'data', 'cifar10')
+perpath = os.path.join('/home/w34ma', 'data', 'parameters')
 
 redis_addresses = [
-    ('localhost', 6379),
+    ('127.0.0.1', 6379),
     ('himrod-5', 6379),
     ('himrod-6', 6379),
     ('himrod-7', 6379)
 ]
 
 def get_hdfs_address():
-    return 'http://192.168.1.20:50070'
+    return 'http://himrod-5:50070'
 
 def get_hdfs_address_spark():
-    return 'hdfs://192.168.1.20:9000'
+    return 'hdfs://himrod-5'
 
 def get_hdfs_client():
     return InsecureClient(get_hdfs_address(), root='/')
@@ -67,7 +67,7 @@ def load_matrix(name):
     return data
 
 def save_matrix_redis(name, data):
-    client = redis(db=0)
+    client = redis(host='127.0.0.1', port=6379, db=0)
     name = str(name)
     dtype = str(data.dtype)
     shape = str(data.shape)
@@ -81,15 +81,18 @@ def load_matrix_redis(key):
         host = server[0]
         port = server[1]
         client = redis(host=host, port=port, db=0)
-        entry = client.get(key)
-        if entry != None:
-            dtype_str = key.split('|')[1]
-            shape_str = key.split('|')[2]
-            shape = []
-            for s in shape_str[1:-1].split(','):
-                shape.append(int(s))
-            data = np.fromstring(entry, dtype=dtype_str).reshape(tuple(shape))
-            break
+        try:
+            entry = client.get(key)
+            if entry != None:
+                dtype_str = key.split('|')[1]
+                shape_str = key.split('|')[2]
+                shape = []
+                for s in shape_str[1:-1].split(','):
+                    shape.append(int(s))
+                data = np.fromstring(entry, dtype=dtype_str).reshape(tuple(shape))
+                break
+        except Exception as error:
+            continue
     return data
 
 
