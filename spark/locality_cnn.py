@@ -8,50 +8,16 @@ from spark.relu import ReLULayer
 from spark.pool import PoolingLayer
 from spark.fc import FCLayer
 from spark.utils import *
-from spark.cnn import CNN
+from spark.spark_cnn import SparkCNN
 
-class LocalityCNN(CNN):
+class LocalityCNN(SparkCNN):
     def __init__(self, I, B):
-        CNN.__init__(self, I)
+        SparkCNN.__init__(self, I, B)
         self.name = 'locality_cnn'
         self.B = B # number of batches
         # create spark context
         spark = SparkSession.builder.appName('locality-cnn').getOrCreate()
         self.sc = spark.sparkContext
-
-    def predict(self, size = 10000):
-        self.reload()
-        B = self.B
-        G = size // B
-
-        conv = self.conv
-        relu = self.relu
-        pool = self.pool
-        fc = self.fc
-        sc = self.sc
-
-        def forward_map(batch):
-            start = batch * G
-            end = start + G
-            X, Y = load_testing_data(start, end)
-            R1 = conv.forward(X)
-            X = None
-            R2 = relu.forward(R1)
-            R1 = None
-            R3 = pool.forward(R2)
-            R2 = None
-            R4 = fc.forward(R3)
-            R3 = None
-            return [R4, Y]
-
-        def forward_reduce(a, b):
-            R4 = np.append(a[0], b[0], 0)
-            Y = np.append(a[1], b[1], 0)
-            return [R4, Y]
-
-        R = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
-        return R[0], R[1]
-
 
     def train(self, size = 1000):
         print('Start training CNN with Spark...')
