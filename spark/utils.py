@@ -3,10 +3,15 @@ import psutil
 import numpy as np
 import pickle
 from hdfs import InsecureClient
+from redis import StrictRedis as redis
 
 # constants
 dirpath = os.path.join('/', 'data', 'cifar10')
 perpath = os.path.join('/', 'data', 'parameters')
+
+redis_addresses = [
+    ('localhost', 6379)
+]
 
 def get_hdfs_address():
     return 'http://192.168.1.20:50070'
@@ -57,6 +62,33 @@ def load_matrix(name):
     with client.read(name) as reader:
         data = pickle.load(reader)
     return data
+
+def save_matrix_redis(name, data):
+    client = redis(db=0)
+    name = str(name)
+    dtype = str(data.dtype)
+    shape = str(data.shape)
+    key = '{0}|{1}|{2}'.format(name, dtype, shape)
+    client.set(key, data.ravel().tostring())
+    return key
+
+def load_matrix_redis(key):
+    data = None
+    for server in redis_addresses:
+        host = server[0]
+        port = server[1]
+        client = redis(host=host, port=port, db=0)
+        entry = client.get(key)
+        if entry != None:
+            dtype_str = key.split('|')[1]
+            shape_str = key.split('|')[2]
+            shape = []
+            for s in shape_str[1:-1].split(','):
+                shape.append(int(s))
+            data = np.fromstring(entry, dtype=dtype_str).reshape(tuple(shape))
+            break
+    return data
+
 
 def save_batch(batch):
     name = 'batches/' + str(batch) + '.batch'
