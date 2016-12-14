@@ -109,16 +109,19 @@ class SparkCNN(CNN):
         for i in range(0, self.I):
             print('iteration %d' % i)
 
+            # clear batch files
+            clear_batches()
+
             # forward
             start = time()
-            batches, R4 = self.forward(size)
+            R4 = self.forward(size)
             middle = time()
 
             # calculate loss and gradients
             L, dS = softmax(R4, Y)
 
             # backward
-            dAConv, dbConv, dAFC, dbFC = self.backward(batches, dS)
+            dAConv, dbConv, dAFC, dbFC = self.backward(dS)
             end = time()
 
             # update parameters
@@ -167,17 +170,17 @@ class SparkCNN(CNN):
             save_matrix('R3_batch_' + str(batch), R3)
             R3 = None
 
-            return [batch, R4]
+            save_batch(batch)
+
+            return R4
 
         def forward_reduce(a, b):
-            batches = np.append(a[0], b[0])
-            R4 = np.append(a[1], b[1], 0)
-            return [batches, R4]
+            return np.append(a, b, 0)
 
-        R = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
-        return R[0], R[1]
+        R4 = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
+        return R4
 
-    def backward(self, batches, dS):
+    def backward(self, dS):
         # backward
         B = self.B
         G = self.G
@@ -190,9 +193,15 @@ class SparkCNN(CNN):
 
         XB = self.XB
 
-        def backward_map(pair):
-            b = pair[0]
-            dS = pair[1]
+        dSB = sc.broadcast(dS)
+
+        def backward_map(batch):
+            b = batch[1]
+            b = int(b)
+            start = b * G
+            end = start + G
+
+            dS = dSB.value[start:end, :]
 
             # load R3
             R3 = load_matrix('R3_batch_' + str(b))
@@ -210,8 +219,6 @@ class SparkCNN(CNN):
             R1 = None
 
             # load X
-            start = b * G
-            end = start + G
             X = XB.value[start:end, :, :, :]
             dXConv, dAConv, dbConv = conv.backward(dXReLU, X)
             X = None
@@ -222,13 +229,9 @@ class SparkCNN(CNN):
             return np.sum([a, b], 0)
 
         # construct collection for map reduce
-        pairs = []
-        for i in range(0, len(batches)):
-            b = batches[i]
-            dS_b = dS[b * G:b * G + G, :]
-            pairs.append([b, dS_b])
+        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches') \
+            .map(backward_map).reduce(backward_reduce)
 
-        R = sc.parallelize(pairs, len(pairs)).map(backward_map).reduce(backward_reduce)
         dAConv = R[0]
         dbConv = R[1]
         dAFC = R[2]

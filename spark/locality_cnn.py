@@ -168,5 +168,4 @@ class LocalityCNN(SparkCNN):
         dbConv = R[1]
         dAFC = R[2]
         dbFC = R[3]
-        end = time()
         return dAConv, dbConv, dAFC, dbFC
