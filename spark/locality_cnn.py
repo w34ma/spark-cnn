@@ -43,9 +43,9 @@ class LocalityCNN(SparkCNN):
             middle = time()
 
             # calculate loss and gradients
-            L, dS = softmax(R4, Y)
+            L, df = softmax(R4, Y)
 
-            dAConv, dbConv, dAFC, dbFC = self.backward(dS)
+            dAConv, dbConv, dAFC, dbFC = self.backward(df)
             end = time()
 
             # update parameters
@@ -107,7 +107,7 @@ class LocalityCNN(SparkCNN):
         R4 = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
         return R4
 
-    def backward(self, dS):
+    def backward(self, df):
         # backward
         B = self.B
         G = self.G
@@ -119,9 +119,9 @@ class LocalityCNN(SparkCNN):
         sc = self.sc
 
         XB = self.XB
-        # first broadcast dS to all nodes
+        # first broadcast df to all nodes
         begin = time()
-        dSB = sc.broadcast(dS)
+        dfB = sc.broadcast(df)
         end = time()
         print('Backward broadcasting done time %.4f' % (end - begin))
 
@@ -132,11 +132,11 @@ class LocalityCNN(SparkCNN):
             start = b * G
             end = start + G
 
-            dS = dSB.value[start:end, :]
+            df = dfB.value[start:end, :]
 
             # load R3
             R3 = load_matrix_redis(key_R3)
-            dXFC, dAFC, dbFC = fc.backward(dS, R3)
+            dXFC, dAFC, dbFC = fc.backward(df, R3)
             R3 = None
 
             # load R2
@@ -161,12 +161,11 @@ class LocalityCNN(SparkCNN):
             return np.sum([a, b], 0)
 
         # create RDD from hdfs directory
-        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches') \
+        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches', minPartitions=B) \
             .map(backward_map).reduce(backward_reduce)
 
         dAConv = R[0]
         dbConv = R[1]
         dAFC = R[2]
         dbFC = R[3]
-        end = time()
         return dAConv, dbConv, dAFC, dbFC
