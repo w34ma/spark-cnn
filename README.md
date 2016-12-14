@@ -27,11 +27,11 @@ In the root folder of this project (spark-cnn), we have
 We also have some files for testing, which will be explained later in the Running Code section.
 
 ### Dependency
-The project depends on Python3 and Python3 modules psutil, cython, hdfs, redis, and pyspark
-The naive implementation can be run locally
-Spark implementation (both HDFS and Redis) must be run through spark-submit
-The HDFS version must have access to HDFS cluster with proper read/write permission to hdfs/matrices
-The Redis version must have access to Redis server hosted on all cluster nodes
+The project depends on Python3 and Python3 modules psutil, cython, hdfs, redis, and pyspark. <br>
+The naive implementation can be run locally.<br>
+Spark implementation (both HDFS and Redis) must be run through spark-submit.<br>
+The HDFS version must have access to HDFS cluster with proper read/write permission to hdfs/matrices.<br>
+The Redis version must have access to Redis server hosted on all cluster nodes.
 
 ### Before Running Code
 To run our code, one must
