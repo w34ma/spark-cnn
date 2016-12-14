@@ -68,7 +68,6 @@ class SparkCNN(CNN):
         fc = self.fc
         sc = self.sc
 
-        X, Y = load_testing_data(0, size)
         XB = sc.broadcast(X)
 
         def forward_map(batch):
