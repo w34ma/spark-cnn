@@ -84,3 +84,5 @@ You may need to supply spark settings to increase memory allowance for your Spar
 --driver-memory 32g --executor-memory 64g
 
 the number of batches supplied to Spark CNN is the number of batches we are splitting training input images to, as well as the tasks (one for one batch) we are creating for Spark.
+
+Note: for HDFS and Redis enabled Spark CNN, the number of images must be dividable by number of batches, otherwise the code may perform unexpectedly, e.g. 5000 100 50 works but 5000 100 60 doesn't
