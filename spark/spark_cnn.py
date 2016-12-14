@@ -118,10 +118,10 @@ class SparkCNN(CNN):
             middle = time()
 
             # calculate loss and gradients
-            L, dS = softmax(R4, Y)
+            L, df = softmax(R4, Y)
 
             # backward
-            dAConv, dbConv, dAFC, dbFC = self.backward(dS)
+            dAConv, dbConv, dAFC, dbFC = self.backward(df)
             end = time()
 
             # update parameters
@@ -180,7 +180,7 @@ class SparkCNN(CNN):
         R4 = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
         return R4
 
-    def backward(self, dS):
+    def backward(self, df):
         # backward
         B = self.B
         G = self.G
@@ -193,7 +193,7 @@ class SparkCNN(CNN):
 
         XB = self.XB
 
-        dSB = sc.broadcast(dS)
+        dfB = sc.broadcast(df)
 
         def backward_map(batch):
             b = batch[1]
@@ -201,11 +201,11 @@ class SparkCNN(CNN):
             start = b * G
             end = start + G
 
-            dS = dSB.value[start:end, :]
+            df = dfB.value[start:end, :]
 
             # load R3
             R3 = load_matrix('R3_batch_' + str(b))
-            dXFC, dAFC, dbFC = fc.backward(dS, R3)
+            dXFC, dAFC, dbFC = fc.backward(df, R3)
             R3 = None
 
             # load R2
