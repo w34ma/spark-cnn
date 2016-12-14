@@ -161,7 +161,7 @@ class LocalityCNN(SparkCNN):
             return np.sum([a, b], 0)
 
         # create RDD from hdfs directory
-        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches') \
+        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches', minPartitions=B) \
             .map(backward_map).reduce(backward_reduce)
 
         dAConv = R[0]

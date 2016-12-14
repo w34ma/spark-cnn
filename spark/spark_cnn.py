@@ -229,7 +229,7 @@ class SparkCNN(CNN):
             return np.sum([a, b], 0)
 
         # construct collection for map reduce
-        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches') \
+        R = sc.wholeTextFiles(get_hdfs_address_spark() + '/batches', minPartitions=B) \
             .map(backward_map).reduce(backward_reduce)
 
         dAConv = R[0]
