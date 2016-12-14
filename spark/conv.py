@@ -2,8 +2,8 @@
 import numpy as np
 import math
 from time import time
-from matrix import *
-from utils import *
+from spark.matrix import *
+from spark.utils import *
 
 class ConvolutionLayer():
     def __init__(self, K, F, S, D, P):
@@ -40,21 +40,8 @@ class ConvolutionLayer():
         W_ = (W - F + 2 * P) // S + 1
         H_ = (H - F + 2 * P) // S + 1
 
-        im2col_start = time()
-        XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        im2col_end = time()
-        X = None
-        print('--conv forward im2col done: time %.3f' % (im2col_end - im2col_start))
-
-        dot_start = time()
-        R = np.dot(XC, A.reshape(K, F * F * D).T) + b.T
-        dot_end = time()
-        print('--conv forward dot done: time %.3f' % (dot_end - dot_start))
-
-        print('conv forward at least memory used: %dMB' % ((XC.nbytes + R.nbytes) // 1024 // 1024))
-        XC = None
-
-        
+        # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
+        R = np.dot(im2col(X, F, S, P), A.reshape(K, F * F * D).T) + b.T
         return R.reshape(N, W_, H_, K)
 
     def backward(self, df, X):
@@ -71,44 +58,27 @@ class ConvolutionLayer():
         N, W_, H_, K = df.shape
         _, W, H, D = X.shape
 
-        im2col_start = time()
-        XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
-        im2col_end = time()
-        X = None
-        print('--conv backward im2col done: time %.3f' % (im2col_end - im2col_start))
-
         # stretch gradients to [(N x W_ x H_) x (F x F x D)]
         # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
         # then get gradients on X
-        t1 = time()
-        dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
-        t2 = time()
-        # dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
-        dX = col2im(dXC, N, W, H, D, F, S, P)
-        t3 = time()
+        # dXC = np.dot(df.reshape(-1, K), A.reshape(K, -1))
+        dX = col2im(np.dot(df.reshape(-1, K), A.reshape(K, -1)), N, W, H, D, F, S, P)
+        # dX = col2im(dXC, N, W, H, D, F, S, P)
         # XC = im2col(X, F, S, P)
-        # print(X.shape)
-        # print(XC.shape)
-        t4 = time()
-        # print('--convo backward im2col: %.3f' % (t4 - t3))
-        
-        dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
-        t5 = time()
+        dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
+        # dA = np.dot(df.reshape(-1, K).T, XC).reshape(K, F, F, D)
 
         # stretch original input to calculate gradients on filters
         # XC = im2col(X, F, S, P) # [(N x W_ x H_) x (F x F x D)]
         # dA = np.dot(df.reshape(-1, K).T, im2col(X, F, S, P)).reshape(K, F, F, D)
         db = np.sum(df, axis=(0, 1, 2)).reshape(K, 1)
-        t6 = time()
 
-        
-        print('--conv backward np.dot: %.3f' % (t2 - t1))
-        print('--conv backward col2im: %.3f' % (t3 - t2))
-        
-        print('--conv backward np.dot: %.3f' % (t5 - t4))
-        print('--conv backward np.sum: %.3f' % (t6 - t5))
-        
-        print('conv backward at least memory used: %dMB' % ((dX.nbytes + df.nbytes + XC.nbytes) // 1024 // 1024)) #XC > dA,dB
-
+        """
+        print('step 1: %.3f' % (t2 - t1))
+        print('step 2: %.3f' % (t3 - t2))
+        print('step 3: %.3f' % (t4 - t3))
+        print('step 4: %.3f' % (t5 - t4))
+        print('step 5: %.3f' % (t6 - t5))
+        """
 
         return dX, dA, db

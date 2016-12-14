@@ -1,10 +1,10 @@
 import numpy as np
 from time import time
-from conv import ConvolutionLayer
-from relu import ReLULayer
-from pool import PoolingLayer
-from fc import FCLayer
-from utils import *
+from spark.conv import ConvolutionLayer
+from spark.relu import ReLULayer
+from spark.pool import PoolingLayer
+from spark.fc import FCLayer
+from spark.utils import *
 
 class CNN():
     def __init__(self, I):
@@ -21,7 +21,7 @@ class CNN():
         self.lam = 0.1 # regularization strength
 
         # logging settings
-        self.verbose = True
+        self.verbose = False
 
     def init_layers(self, C):
         # initialize layers
@@ -60,6 +60,7 @@ class CNN():
             print('forward time %.3f, backward time %.3f, loss %.3f ' % \
                 (middle - start, end - middle, L))
 
+        # self.save()
         time_end = time()
         print('training done, total time consumption %.3f' % (time_end - time_begin))
 
@@ -145,21 +146,21 @@ class CNN():
 
     def reload(self):
         # reload all layers' parameters
-        self.conv.V = load_parameters(self.name + '_conv.V')
-        self.conv.A = load_parameters(self.name + '_conv.A')
-        self.conv.b = load_parameters(self.name + '_conv.b')
-        self.fc.V = load_parameters(self.name + '_fc.V')
-        self.fc.A = load_parameters(self.name + '_fc.A')
-        self.fc.b = load_parameters(self.name + '_fc.b')
+        self.conv.V = load_parameters_local(self.name + '_conv.V')
+        self.conv.A = load_parameters_local(self.name + '_conv.A')
+        self.conv.b = load_parameters_local(self.name + '_conv.b')
+        self.fc.V = load_parameters_local(self.name + '_fc.V')
+        self.fc.A = load_parameters_local(self.name + '_fc.A')
+        self.fc.b = load_parameters_local(self.name + '_fc.b')
 
     def save(self):
         # save all layers' parameters
-        save_parameters(self.name + '_conv.V', self.conv.V)
-        save_parameters(self.name + '_conv.A', self.conv.A)
-        save_parameters(self.name + '_conv.b', self.conv.b)
-        save_parameters(self.name + '_fc.V', self.fc.V)
-        save_parameters(self.name + '_fc.A', self.fc.A)
-        save_parameters(self.name + '_fc.b', self.fc.b)
+        save_parameters_local(self.name + '_conv.V', self.conv.V)
+        save_parameters_local(self.name + '_conv.A', self.conv.A)
+        save_parameters_local(self.name + '_conv.b', self.conv.b)
+        save_parameters_local(self.name + '_fc.V', self.fc.V)
+        save_parameters_local(self.name + '_fc.A', self.fc.A)
+        save_parameters_local(self.name + '_fc.b', self.fc.b)
 
     def predict(self, X):
         # output predicted classifications

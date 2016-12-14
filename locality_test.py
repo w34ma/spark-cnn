@@ -1,17 +1,18 @@
-# test the performance of learnt CNN on test data
+# test the performance of learnt CNN on its corresponding training data
 import sys
 import numpy as np
-from utils import *
-from cnn import CNN
+from spark.utils import *
+from spark.locality_cnn import LocalityCNN
 from time import time
 
-def test(size):
-    assert size <= 10000, 'we only have 10000 test data'
+def test(size, batches):
+    print('Testing Locality CNN for %d testing images (%d batches)' % (size, batches))
     start = time()
+    cnn = LocalityCNN(0, batches)
     X, Y = load_testing_data(0, size)
-    cnn = CNN(0)
     P = cnn.predict(X)
     P = np.argmax(P, 1)
+    print('Batches: %d' % batches)
     print('Prediction:')
     print(P)
     print('Answer:')
@@ -25,7 +26,6 @@ def test(size):
     print('Total time consumption: %.3f' % (end - start))
 
 if __name__ == '__main__':
-    size = 2000
-    if len(sys.argv) > 1:
-        size = int(sys.argv[1])
-    test(size)
+    size = int(sys.argv[1]) if len(sys.argv) > 1 else 10000
+    batches = int(sys.argv[2]) if len(sys.argv) > 2 else 4
+    test(size, batches)

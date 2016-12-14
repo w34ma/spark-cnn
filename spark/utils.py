@@ -2,22 +2,117 @@ import os
 import psutil
 import numpy as np
 import pickle
+from hdfs import InsecureClient
+from redis import StrictRedis as redis
 
-curpath = os.path.dirname(os.path.realpath(__file__))
-dirpath = os.path.join(curpath, os.path.pardir, 'cifar10')
-parpath = os.path.join(curpath, 'parameters')
+# constants
+dirpath = os.path.join('/home/w34ma', 'data', 'cifar10')
+perpath = os.path.join('/home/w34ma', 'data', 'parameters')
 
-def save_parameters(name, data):
-    name = name + '.params'
-    with open(os.path.join(parpath, name), 'wb') as f:
+redis_addresses = [
+    ('127.0.0.1', 6379),
+    ('himrod-5', 6379),
+    ('himrod-6', 6379),
+    ('himrod-7', 6379)
+]
+
+def get_hdfs_address():
+    return 'http://himrod-5:50070'
+
+def get_hdfs_address_spark():
+    return 'hdfs://himrod-5'
+
+def get_hdfs_client():
+    return InsecureClient(get_hdfs_address(), root='/')
+
+def save_parameters_local(name, data):
+    name = os.path.join(perpath, name + '.params')
+    with open(name, 'wb') as f:
         pickle.dump(data, f)
 
-def load_parameters(name):
-    name = name + '.params'
+def load_parameters_local(name):
+    name = os.path.join(perpath, name + '.params')
     data = None
-    with open(os.path.join(parpath, name), 'rb') as f:
+    with open(name, 'rb') as f:
         data = pickle.load(f)
     return data
+
+def save_parameters(name, data):
+    name = 'parameters/' + name + '.params'
+    client = get_hdfs_client()
+    with client.write(name, overwrite=True) as writer:
+        pickle.dump(data, writer)
+
+def load_parameters(name):
+    # use hdfs
+    name = 'parameters/' + name + '.params'
+    data = None
+    client = get_hdfs_client()
+    with client.read(name) as reader:
+        data = pickle.load(reader)
+    return data
+
+def save_matrix(name, data):
+    name = 'matrices/' + name + '.matrix'
+    client = get_hdfs_client()
+    with client.write(name, overwrite=True) as writer:
+        pickle.dump(data, writer)
+
+def load_matrix(name):
+    name = 'matrices/' + name + '.matrix'
+    data = None
+    client = get_hdfs_client()
+    with client.read(name) as reader:
+        data = pickle.load(reader)
+    return data
+
+def save_matrix_redis(name, data):
+    client = redis(host='127.0.0.1', port=6379, db=0)
+    name = str(name)
+    dtype = str(data.dtype)
+    shape = str(data.shape)
+    key = '{0}|{1}|{2}'.format(name, dtype, shape)
+    client.set(key, data.ravel().tostring())
+    return key
+
+def load_matrix_redis(key):
+    data = None
+    for server in redis_addresses:
+        host = server[0]
+        port = server[1]
+        client = redis(host=host, port=port, db=0)
+        try:
+            entry = client.get(key)
+            if entry != None:
+                dtype_str = key.split('|')[1]
+                shape_str = key.split('|')[2]
+                shape = []
+                for s in shape_str[1:-1].split(','):
+                    shape.append(int(s))
+                data = np.fromstring(entry, dtype=dtype_str).reshape(tuple(shape))
+                break
+        except Exception as error:
+            continue
+    return data
+
+def clear_matrix_redis():
+    for server in redis_addresses:
+        host = server[0]
+        port = server[1]
+        client = redis(host=host, port=port, db=0)
+        try:
+            client.flushdb()
+        except Exception as error:
+            continue
+
+def save_batch(batch):
+    name = 'batches/' + str(batch) + '.batch'
+    client = get_hdfs_client()
+    client.write(name, str(batch), overwrite=True)
+
+def clear_batches():
+    client = get_hdfs_client()
+    client.delete('batches', recursive=True)
 
 def load_classifications():
     print('Loading classifications...')
@@ -117,4 +212,4 @@ def softmax(S, Y):
 # helper for profiling memory usage
 def memory():
     process = psutil.Process(os.getpid())
-    return process.memory_info().rss // 1024 // 1024
+    return str(process.memory_info().rss // 1024 // 1024) + "MB"

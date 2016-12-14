@@ -1,15 +1,15 @@
-# test the performance of learnt CNN on test data
+# test the performance of learnt CNN on its corresponding training data
 import sys
 import numpy as np
-from utils import *
-from cnn import CNN
+from spark.utils import *
+from spark.cnn import CNN
 from time import time
 
 def test(size):
-    assert size <= 10000, 'we only have 10000 test data'
+    print('Testing naive CNN for %d testing images' % (size))
     start = time()
-    X, Y = load_testing_data(0, size)
     cnn = CNN(0)
+    X, Y = load_testing_data(0, size)
     P = cnn.predict(X)
     P = np.argmax(P, 1)
     print('Prediction:')
@@ -25,7 +25,5 @@ def test(size):
     print('Total time consumption: %.3f' % (end - start))
 
 if __name__ == '__main__':
-    size = 2000
-    if len(sys.argv) > 1:
-        size = int(sys.argv[1])
+    size = int(sys.argv[1]) if len(sys.argv) > 1 else 10000
     test(size)
