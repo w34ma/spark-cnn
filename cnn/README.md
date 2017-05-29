@@ -1,1 +1,0 @@
-CNN powered by SPARK

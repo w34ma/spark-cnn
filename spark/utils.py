@@ -6,8 +6,8 @@ from hdfs import InsecureClient
 from redis import StrictRedis as redis
 
 # constants
-dirpath = os.path.join('/home/w34ma', 'data', 'cifar10')
-perpath = os.path.join('/home/w34ma', 'data', 'parameters')
+dirpath = os.path.join('/Users/Vivi', 'data', 'cifar10')
+perpath = os.path.join('/Users/Vivi', 'data', 'parameters')
 
 redis_addresses = [
     ('127.0.0.1', 6379),
