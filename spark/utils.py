@@ -123,6 +123,7 @@ def load_classifications():
     return classifications
 
 def load_testing_data(start = 0, end = 10000):
+    # load testing data set from start-th (inclusive) image to end-th (exclusive) image
     assert end > start and start >= 0 and end <= 10000, 'invalid test data range'
     print('Loading testing set...')
     filename = 'test_batch'
@@ -146,8 +147,8 @@ def load_training_data(start = 0, end = 60000):
     file_start = start // 10000 + 1
     file_end = (end - 1) // 10000 + 1
 
-    X = []
-    Y = []
+    X = [] # images, [N x W x H x D]
+    Y = [] # classifications [N x C]
 
     for i in range(file_start, file_end + 1):
         filename = 'data_batch_' + str(i)

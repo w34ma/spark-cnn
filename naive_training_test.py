@@ -12,9 +12,9 @@ def test(size):
     P = cnn.predict(X)
     P = np.argmax(P, 1)
     print('Testing naive CNN for %d training images' % (size))
-    print('Prediction:')
+    print('Predicted Classifications:')
     print(P)
-    print('Answer:')
+    print('Correct Classifications:')
     print(Y)
 
     C = np.concatenate([P, Y]).reshape(2, -1).T

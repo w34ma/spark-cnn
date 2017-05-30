@@ -13,9 +13,9 @@ def test(size, batches):
     P = cnn.predict_train(X)
     P = np.argmax(P, 1)
     print('Batches: %d' % batches)
-    print('Prediction:')
+    print('Predicted Classifications:')
     print(P)
-    print('Answer:')
+    print('Correct Classifications:')
     print(Y)
 
     C = np.concatenate([P, Y]).reshape(2, -1).T
