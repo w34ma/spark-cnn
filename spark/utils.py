@@ -25,11 +25,13 @@ def get_hdfs_address_spark():
 def get_hdfs_client():
     return InsecureClient(get_hdfs_address(), root='/')
 
+# save to local file systems, save weights
 def save_parameters_local(name, data):
     name = os.path.join(perpath, name + '.params')
     with open(name, 'wb') as f:
         pickle.dump(data, f)
 
+# load when doing prediction
 def load_parameters_local(name):
     name = os.path.join(perpath, name + '.params')
     data = None
@@ -37,6 +39,7 @@ def load_parameters_local(name):
         data = pickle.load(f)
     return data
 
+# save to HDFS
 def save_parameters(name, data):
     name = 'parameters/' + name + '.params'
     client = get_hdfs_client()
@@ -52,6 +55,7 @@ def load_parameters(name):
         data = pickle.load(reader)
     return data
 
+# save intermediate results, HDFS
 def save_matrix(name, data):
     name = 'matrices/' + name + '.matrix'
     client = get_hdfs_client()
@@ -66,6 +70,7 @@ def load_matrix(name):
         data = pickle.load(reader)
     return data
 
+# save intermediate results, Redis
 def save_matrix_redis(name, data):
     client = redis(host='127.0.0.1', port=6379, db=0)
     name = str(name)

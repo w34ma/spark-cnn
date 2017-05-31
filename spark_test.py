@@ -10,7 +10,7 @@ def test(size, batches):
     start = time()
     cnn = SparkCNN(0, batches)
     X, Y = load_testing_data(0, size)
-    P = cnn.predict_train(X)
+    P = cnn.predict(X)
     P = np.argmax(P, 1)
     print('Batches: %d' % batches)
     print('Predicted Classifications:')

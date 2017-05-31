@@ -19,43 +19,6 @@ class SparkCNN(CNN):
         spark = SparkSession.builder.appName('spark-cnn').getOrCreate()
         self.sc = spark.sparkContext
 
-    def predict_train(self, X):
-        self.reload()
-        N = X.shape[0]
-        B = self.B
-        G = N // B
-
-        conv = self.conv
-        relu = self.relu
-        pool = self.pool
-        fc = self.fc
-        sc = self.sc
-
-        XB = sc.broadcast(X)
-
-        def forward_map(batch):
-            start = batch * G
-            end = start + G
-
-            X = XB.value[start:end, :, :, :]
-
-            R1 = conv.forward(X)
-            X = None
-            R2 = relu.forward(R1)
-            R1 = None
-            R3 = pool.forward(R2)
-            R2 = None
-            R4 = fc.forward(R3)
-            R3 = None
-            return R4
-
-        def forward_reduce(a, b):
-            R4 = np.append(a, b, 0)
-            return R4
-
-        R4 = sc.parallelize(range(B), B).map(forward_map).reduce(forward_reduce)
-        return R4
-
     def predict(self, X):
         self.reload()
         N = X.shape[0]

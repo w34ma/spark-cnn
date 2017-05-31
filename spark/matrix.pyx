@@ -24,6 +24,7 @@ def im2col(X, F, S, P):
 
     # prepare input for C
     # zero padded X
+    # conv zero padding
     X0 = np.pad(X, ((0, 0), (P, P), (P, P), (0, 0)), 'constant')
     X0 = np.require(X0, np.float64, ['C', 'A'])
     # prepare output for C
